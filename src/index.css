@@ -1,0 +1,272 @@
+@import "@fontsource/manrope/400.css";
+@import "@fontsource/manrope/500.css";
+@import "@fontsource/manrope/600.css";
+@import "@fontsource/manrope/700.css";
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* The theme is `data-theme` on <html>, set from the stored choice or the system before paint
+   (index.html) and switched by the top bar toggle. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Theme tokens. Components use only these. The names follow shadcn/ui so its components work
+   as generated: `muted` is a quiet background, `muted-foreground` the quiet text.
+   Indigo is the one accent, amber marks search hits, six hues belong to people. */
+:root {
+  color-scheme: light;
+
+  --background: #f5f6fa;
+  --foreground: #15171f;
+  --card: #ffffff;
+  --card-foreground: #15171f;
+  --popover: #ffffff;
+  --popover-foreground: #15171f;
+
+  --primary: #5b5bd6;
+  --primary-hover: #4a4ac4;
+  --primary-foreground: #ffffff;
+  --primary-glow: rgb(91 91 214 / 0.3);
+
+  --secondary: #f0f1f5;
+  --secondary-foreground: #15171f;
+  --muted: #f0f1f5;
+  --muted-foreground: #5b6170;
+  --subtle-foreground: #7a8194;
+  --accent: #f0f1f5;
+  --accent-foreground: #15171f;
+
+  --destructive: #c2333f;
+  --border: #e6e8ef;
+  --input: #e6e8ef;
+  --ring: #5b5bd6;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #5b6170;
+  --sidebar-primary: #5b5bd6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f1f5;
+  --sidebar-accent-foreground: #15171f;
+  --sidebar-border: #e6e8ef;
+  --sidebar-ring: #5b5bd6;
+
+  --highlight: #f5b700;
+  --highlight-foreground: #5a3a00;
+
+  --status-todo: #5b6170;
+  --status-progress: #d97a0f;
+  --status-done: #1e9e6a;
+
+  --priority-low: #5b6170;
+  --priority-medium: #d97a0f;
+  --priority-high: #c2333f;
+
+  --sentiment-positive: #1e9e6a;
+  --sentiment-neutral: #5b6170;
+  --sentiment-negative: #c2333f;
+
+  --chart-1: #5b5bd6;
+  --chart-2: #dddff8;
+  --chart-3: #1e9e6a;
+
+  --speaker-1: #7c4ddb;
+  --speaker-2: #1e9e6a;
+  --speaker-3: #d97a0f;
+  --speaker-4: #d6409f;
+  --speaker-5: #2f6fd6;
+  --speaker-6: #0e8c8c;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #0c0e12;
+  --foreground: #e6e9ee;
+  --card: #14181e;
+  --card-foreground: #e6e9ee;
+  --popover: #14181e;
+  --popover-foreground: #e6e9ee;
+
+  --primary: #8585f0;
+  --primary-hover: #9b9bf4;
+  --primary-foreground: #0c0e12;
+  --primary-glow: rgb(133 133 240 / 0.25);
+
+  --secondary: #1a1f27;
+  --secondary-foreground: #e6e9ee;
+  --muted: #1a1f27;
+  --muted-foreground: #9aa3b0;
+  --subtle-foreground: #7c8696;
+  --accent: #1a1f27;
+  --accent-foreground: #e6e9ee;
+
+  --destructive: #f07178;
+  --border: #242a33;
+  --input: #242a33;
+  --ring: #8585f0;
+
+  --sidebar: #14181e;
+  --sidebar-foreground: #9aa3b0;
+  --sidebar-primary: #8585f0;
+  --sidebar-primary-foreground: #0c0e12;
+  --sidebar-accent: #1a1f27;
+  --sidebar-accent-foreground: #e6e9ee;
+  --sidebar-border: #242a33;
+  --sidebar-ring: #8585f0;
+
+  --highlight: #f5b700;
+  --highlight-foreground: #ffd9b3;
+
+  --status-todo: #9aa3b0;
+  --status-progress: #f5a65b;
+  --status-done: #5ad39c;
+
+  --priority-low: #9aa3b0;
+  --priority-medium: #f5a65b;
+  --priority-high: #f07178;
+
+  --sentiment-positive: #5ad39c;
+  --sentiment-neutral: #9aa3b0;
+  --sentiment-negative: #f07178;
+
+  --chart-1: #8585f0;
+  --chart-2: #2a2f55;
+  --chart-3: #5ad39c;
+
+  --speaker-1: #9b86e3;
+  --speaker-2: #5ad39c;
+  --speaker-3: #f5a65b;
+  --speaker-4: #e57ab5;
+  --speaker-5: #6ea8fe;
+  --speaker-6: #3fb5b5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+
+  --color-status-todo: var(--status-todo);
+  --color-status-progress: var(--status-progress);
+  --color-status-done: var(--status-done);
+
+  --color-priority-low: var(--priority-low);
+  --color-priority-medium: var(--priority-medium);
+  --color-priority-high: var(--priority-high);
+
+  --color-sentiment-positive: var(--sentiment-positive);
+  --color-sentiment-neutral: var(--sentiment-neutral);
+  --color-sentiment-negative: var(--sentiment-negative);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+
+  --color-speaker-1: var(--speaker-1);
+  --color-speaker-2: var(--speaker-2);
+  --color-speaker-3: var(--speaker-3);
+  --color-speaker-4: var(--speaker-4);
+  --color-speaker-5: var(--speaker-5);
+  --color-speaker-6: var(--speaker-6);
+
+  --font-sans: "Manrope", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Manrope", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  /* One radius per kind: lg icon buttons, xl buttons, inputs and nav items, 2xl cards,
+     3xl large panels. sm, md and 4xl are only for shadcn's own small marks and pills. */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 26px;
+
+  --shadow-soft: 0 12px 32px rgb(21 23 31 / 0.06);
+  --shadow-primary: 0 6px 16px var(--primary-glow);
+  --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.35);
+}
+
+/* In the base layer so a component's own focus style (`outline-none` with a ring) wins. */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Tailwind 4 leaves buttons on the default cursor; whatever can be clicked shows the hand. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  mark {
+    background: color-mix(in srgb, var(--highlight) 30%, transparent);
+    color: var(--highlight-foreground);
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  /* The hit a find box has moved to. A ring rather than a solid fill keeps the text readable on
+     amber in both themes. */
+  mark[data-current] {
+    background: color-mix(in srgb, var(--highlight) 45%, transparent);
+    box-shadow: 0 0 0 2px var(--highlight);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
