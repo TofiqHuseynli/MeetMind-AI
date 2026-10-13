@@ -36,9 +36,10 @@ export function MeetingFilters({
   const [q, setQ] = useState(urlQ);
   const [seenUrlQ, setSeenUrlQ] = useState(urlQ);
   // The top bar can change `q` from outside; take it over without losing local typing.
+  // Our own push comes back trimmed; taking it over would eat a space the user just typed.
   if (urlQ !== seenUrlQ) {
     setSeenUrlQ(urlQ);
-    setQ(urlQ);
+    if (urlQ !== q.trim()) setQ(urlQ);
   }
 
   const pushQ = useDebouncedCallback(

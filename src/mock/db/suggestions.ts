@@ -1,7 +1,8 @@
-import { addDays, format, nextDay, nextFriday, parseISO, type Day } from "date-fns";
+import { addDays, nextDay, nextFriday, parseISO, type Day } from "date-fns";
 import type { Person, Priority, SuggestedTask, TranscriptSegment } from "@/types";
 import { MODEL_LATENCY, delay } from "@/mock/delay";
 import * as seed from "@/mock/seed";
+import { dueDateOf, toDayValue } from "@/utils/date";
 import { copy, db } from "./store";
 
 // The mock's stand-in for the model that reads a sentence and drafts a task from it. It looks
@@ -64,7 +65,7 @@ function draftDueDate(text: string, meetingDate: string): string {
     const weekday = Object.keys(WEEKDAYS).find((name) => lower.includes(name));
     if (weekday) due = nextDay(day, WEEKDAYS[weekday]);
   }
-  return `${format(due, "yyyy-MM-dd")}T00:00:00.000Z`;
+  return dueDateOf(toDayValue(due));
 }
 
 function draftPriority(text: string): Priority {

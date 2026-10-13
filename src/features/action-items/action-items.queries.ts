@@ -121,7 +121,10 @@ export function useUpdateActionStatus() {
       return { snapshot };
     },
     onError: (error, _input, context) => {
-      context?.snapshot.forEach(([key, data]) => queryClient.setQueryData(key, data));
+      // With other changes on their way the snapshot is older than they are, and putting it
+      // back would undo them on screen. The reload after the last change sets this item right.
+      const alone = queryClient.isMutating({ mutationKey: statusChangeKey }) === 1;
+      if (alone) context?.snapshot.forEach(([key, data]) => queryClient.setQueryData(key, data));
       toast.error("Couldn't change the status", { description: error.message });
     },
     // The meeting page and the meeting list carry the action counts. While another status

@@ -22,11 +22,12 @@ export function UploadProgress({ meetingId }: { meetingId: string }) {
   const sawProcessing = useRef(false);
 
   useEffect(() => {
-    if (status === "processing") sawProcessing.current = true;
+    // A cached "processing" from an earlier visit does not count; only a fresh answer does.
+    if (status === "processing" && meeting.isFetchedAfterMount) sawProcessing.current = true;
     if (status !== "ready") return;
     clear();
     if (sawProcessing.current) navigate(meetingPath(meetingId), { replace: true });
-  }, [status, meetingId, clear, navigate]);
+  }, [status, meeting.isFetchedAfterMount, meetingId, clear, navigate]);
 
   if (meeting.isPending) return <Skeleton className="h-56 rounded-2xl" />;
   if (meeting.isError && meeting.data === undefined) {

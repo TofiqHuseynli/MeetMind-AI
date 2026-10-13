@@ -61,7 +61,7 @@ Types live in `src/types/`. Ids are strings. Dates are ISO strings.
 | `TranscriptChapter` | `id`, `meetingId`, `title`, `firstSegmentId`, `lastSegmentId`, `startSec`, `endSec`: a stretch of the meeting about one topic, as the analysis split it |
 | `TranscriptTimeline` | `lines` (each line's `id`, `speakerId`, `startSec`, `endSec`, no text) and `durationSec`: the whole meeting's shape for the timeline strip (built, not on a page yet), sent in one reply |
 | `SuggestedTask` | `id`, `meetingId`, `segmentId`, `title`, `ownerId`, `dueDate`, `priority`: a task the analysis proposes for a sentence nobody took the work on from, seeded for some sentences; making it a task or removing it takes it out. The task dialog can also have the analysis write a task from its sentence ("Write with AI") |
-| `MeetingListItem` | a `Meeting` plus `actionCounts`: each item counted once as done, overdue (open, past its due day), in progress or to do; null until ready; counted by the service. The meeting page gets the same shape |
+| `MeetingListItem` | a `Meeting` plus `actionCounts`: each item counted once as done, overdue (open, past its due day), in progress or to do; null until ready; counted by the service; and `hasTranscript`, which the list and the dashboard mark. The meeting page gets the same shape |
 | `ActionItemFilter`, `ActionItemListQuery` | what an action item table asks for: `q` (task or owner), `status`, `priority`, `ownerId`, `open`, `created` and `due` (day ranges), and across meetings `projectId` and `teamId`; sorted by title, created, due date, priority or status, newest first by default |
 | `ActionItemListItem` | an `ActionItem` plus its `meeting` (id, title, project, team), as the table across meetings gets it from the service |
 | `ListQuery`, `Page` | what a paged list asks for (`filter`, `sort` as field and direction, `page`, `pageSize`) and gets back (`items`, `total`) |
@@ -94,7 +94,8 @@ decisions, action items and risks with that id, and "Create task" pre-fills `mee
   seconds, and the upload page moves to it. The file itself is only read for its name and size.
 - Processing is a job in the db with the result the meeting will have (`mock/seed/analyses.ts`:
   one prepared analysis per seed meeting that is processing or failed, and a template for
-  uploads). The first read after its time writes the summary, sentiment, participation,
+  uploads, with a transcript, chapters, insights, risks and suggested tasks). The first read
+  after its time writes the summary, sentiment, participation, the transcript and its links,
   decisions and action items. An upload or a retried meeting takes 8 s; the seed's processing
   meeting finishes 90 s after the demo opens.
 

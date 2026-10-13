@@ -7,7 +7,7 @@ import { priorityLabel } from "@/features/action-items/action-items.constants";
 import { useCreateActionItem } from "@/features/action-items/action-items.queries";
 import { dueDay } from "@/features/action-items/utils/due-date";
 import type { Person, SuggestedTask } from "@/types";
-import { formatShortDay } from "@/utils/format";
+import { formatDueDay } from "@/utils/format";
 import { useDismissSuggestion } from "../../transcript.queries";
 import { firstName } from "../../utils/format";
 
@@ -50,7 +50,7 @@ export function SuggestedTaskCard({
             {firstName(owner.name)}
           </span>
         )}
-        <span className="tabular-nums">Due {formatShortDay(suggestion.dueDate)}</span>
+        <span className="tabular-nums">Due {formatDueDay(suggestion.dueDate)}</span>
         <Badge variant={suggestion.priority}>
           {priorityLabel[suggestion.priority]}
           <span className="sr-only"> priority</span>

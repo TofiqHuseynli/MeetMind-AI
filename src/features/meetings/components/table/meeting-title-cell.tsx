@@ -1,15 +1,19 @@
 import { Link } from "react-router";
-import type { Meeting, Person } from "@/types";
+import type { MeetingListItem, Person } from "@/types";
 import { formatDuration } from "@/utils/format";
 import { meetingPath } from "../../utils/paths";
 import { TalkStrip } from "../shared/talk-strip";
+import { TranscriptMark } from "../shared/transcript-mark";
 
-/** The title as the row's link, the length and source below it, then the talk strip. */
+/**
+ * The title as the row's link, the length and source below it with a mark when there is a
+ * transcript to read, then the talk strip.
+ */
 export function MeetingTitleCell({
   meeting,
   personById,
 }: {
-  meeting: Meeting;
+  meeting: MeetingListItem;
   personById: Map<string, Person>;
 }) {
   return (
@@ -20,6 +24,7 @@ export function MeetingTitleCell({
       <div className="mt-1 flex flex-wrap items-center gap-x-3 text-xs text-subtle-foreground">
         <span>{formatDuration(meeting.durationMin)}</span>
         <span className="truncate">{meeting.source.fileName}</span>
+        {meeting.hasTranscript && <TranscriptMark />}
       </div>
       {meeting.status === "ready" && (
         <TalkStrip

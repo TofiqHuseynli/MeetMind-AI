@@ -47,14 +47,21 @@ function compareMeetings(
   return b.date.localeCompare(a.date) || a.id.localeCompare(b.id);
 }
 
+/** The meetings that have at least one transcript line. */
+function transcribedMeetingIds(): Set<string> {
+  return new Set(db().segments.map((segment) => segment.meetingId));
+}
+
 /** Filters, counts, sorts and pages, as the real service will. */
 export async function listMeetings(query: MeetingListQuery): Promise<Page<MeetingListItem>> {
   await delay();
   const counts = actionCountsByMeeting();
+  const transcribed = transcribedMeetingIds();
   const matches = [...db().meetings.values()]
     .map((m) => ({
       ...m,
       actionCounts: m.status === "ready" ? (counts.get(m.id) ?? NO_ACTIONS) : null,
+      hasTranscript: transcribed.has(m.id),
     }))
     .filter((m) => matchesFilter(m, query.filter, m.actionCounts))
     .sort((a, b) => compareMeetings(a, b, query.sort));
@@ -71,7 +78,8 @@ export async function getMeeting(id: string): Promise<MeetingListItem | undefine
   const meeting = db().meetings.get(id);
   if (!meeting) return undefined;
   const counts = meeting.status === "ready" ? actionCountsFor(id) : null;
-  return copy({ ...meeting, actionCounts: counts });
+  const hasTranscript = transcribedMeetingIds().has(id);
+  return copy({ ...meeting, actionCounts: counts, hasTranscript });
 }
 
 /**
@@ -104,6 +112,8 @@ export async function deleteMeetings(ids: string[]): Promise<void> {
   data.decisions = data.decisions.filter((d) => !gone.has(d.meetingId));
   data.risks = data.risks.filter((r) => !gone.has(r.meetingId));
   data.insights = data.insights.filter((i) => !gone.has(i.meetingId));
+  data.suggestedTasks = data.suggestedTasks.filter((s) => !gone.has(s.meetingId));
+  data.chapters = data.chapters.filter((c) => !gone.has(c.meetingId));
   for (const [id, item] of data.actionItems) {
     if (gone.has(item.meetingId)) data.actionItems.delete(id);
   }
@@ -138,16 +148,21 @@ export async function retryProcessing(ids: string[]): Promise<number> {
   return count;
 }
 
-// A meeting without a prepared result of its own gets the upload template's, keeping only
-// what its own participants said and own.
+// A meeting without a prepared result of its own gets the upload template's summary, keeping
+// only what its own participants own. The template's transcript is other people talking, so
+// it stays out, and with it the sentences the decisions and tasks point at.
 function analysisFor(meeting: Meeting): PreparedAnalysis {
   const own = seed.meetingAnalyses[meeting.id];
   if (own) return own;
   const template = seed.uploadTemplate;
   const isParticipant = (id: string) => meeting.participantIds.includes(id);
   return {
-    ...template,
+    summary: template.summary,
+    sentiment: template.sentiment,
     participation: template.participation.filter((row) => isParticipant(row.personId)),
-    actionItems: template.actionItems.filter((item) => isParticipant(item.ownerId)),
+    decisions: template.decisions.map(({ text }) => ({ text })),
+    actionItems: template.actionItems
+      .filter((item) => isParticipant(item.ownerId))
+      .map(({ title, ownerId, dueInDays, priority }) => ({ title, ownerId, dueInDays, priority })),
   };
 }

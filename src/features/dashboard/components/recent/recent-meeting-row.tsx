@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { TalkStrip } from "@/features/meetings/components/shared/talk-strip";
+import { TranscriptMark } from "@/features/meetings/components/shared/transcript-mark";
 import {
   meetingStatusBadge,
   meetingStatusLabel,
@@ -35,6 +36,7 @@ export function RecentMeetingRow({
           <span>{formatMeetingDate(meeting.date)}</span>
           <span>{formatDuration(meeting.durationMin)}</span>
           {projectName && <span className="truncate">{projectName}</span>}
+          {meeting.hasTranscript && <TranscriptMark />}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-3 sm:w-52 sm:justify-end">

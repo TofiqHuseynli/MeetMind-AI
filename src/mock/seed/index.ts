@@ -16,7 +16,7 @@ export const SEED_TODAY = "2026-10-07T12:00:00.000Z";
 export { actionItems, decisions, insights, meetings, people, projects, risks, teams };
 export { suggestedTasks, transcriptChapters, transcriptSegments };
 export { meetingAnalyses, uploadTemplate };
-export type { PreparedAnalysis, UploadTemplate } from "./analyses";
+export type { PreparedAnalysis, PreparedTranscript, UploadTemplate } from "./analyses";
 
 /** Throws when a seed row points at something that does not exist. Run in development. */
 export function assertSeed() {
@@ -127,6 +127,41 @@ export function assertSeed() {
     for (const personId of named) {
       if (!participantIds.includes(personId) || !personIds.has(personId)) {
         problems.push(`analysis ${id}: ${personId} is not a participant`);
+      }
+    }
+  }
+
+  // A prepared transcript: its speakers took part, its links point at its lines, and the
+  // per-speaker counts agree with the participation.
+  for (const { id, analysis, participantIds } of analyses) {
+    const transcript = analysis.transcript;
+    if (!transcript || !participantIds) continue;
+    const count = transcript.lines.length;
+    const inRange = (line: number | undefined) =>
+      line === undefined || (line >= 1 && line <= count);
+    const lineRefs = [
+      ...transcript.insights.map((i) => i.line),
+      ...transcript.risks.map((r) => r.line),
+      ...transcript.suggestedTasks.map((s) => s.line),
+      ...transcript.chapters.flatMap(([, first, last]) => [first, last]),
+      ...analysis.decisions.map((d) => d.line),
+      ...analysis.actionItems.map((a) => a.line),
+    ];
+    for (const line of lineRefs) {
+      if (!inRange(line)) problems.push(`analysis ${id}: no line ${line}`);
+    }
+    const spoken = new Map<string, number>();
+    for (const line of transcript.lines) {
+      if (!participantIds.includes(line.speakerId)) {
+        problems.push(`analysis ${id}: speaker ${line.speakerId} is not a participant`);
+      }
+      spoken.set(line.speakerId, (spoken.get(line.speakerId) ?? 0) + 1);
+    }
+    for (const row of analysis.participation) {
+      const lines = spoken.get(row.personId) ?? 0;
+      if (lines !== row.segmentCount) {
+        const expected = row.segmentCount;
+        problems.push(`analysis ${id}: ${row.personId} has ${lines} lines, not ${expected}`);
       }
     }
   }

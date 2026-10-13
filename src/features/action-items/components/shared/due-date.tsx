@@ -2,7 +2,7 @@ import { CalendarDays, CircleAlert } from "lucide-react";
 import { isOverdue } from "@/features/action-items/utils/due-date";
 import { cn } from "@/lib/utils";
 import type { ActionItem } from "@/types";
-import { formatShortDay } from "@/utils/format";
+import { formatDueDay } from "@/utils/format";
 
 /** An action item's due day; red with a warning mark once it is open past that day. */
 export function DueDate({ item, className }: { item: ActionItem; className?: string }) {
@@ -18,7 +18,7 @@ export function DueDate({ item, className }: { item: ActionItem; className?: str
       )}
     >
       <Icon aria-hidden className="size-3.5 shrink-0" />
-      {formatShortDay(item.dueDate)}
+      {formatDueDay(item.dueDate)}
       {overdue && <span className="sr-only">, overdue</span>}
     </span>
   );

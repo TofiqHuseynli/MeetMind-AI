@@ -6,6 +6,7 @@ the data model and the rules are in `spec.md`. Progress is in `TODO.md`.
 | Phase | File | Goal |
 | --- | --- | --- |
 | 1 | `01-demo.md` | Every feature of the brief with mock data, on phone and desktop |
+| 1.5 | `02-delivery.md` | A reviewer sees the whole brief: transcripts on uploads, a README tour, a live link |
 | 2 | no file yet | Live mode: Supabase, speech to text, LLM analysis. Only if the user asks |
 
 ## Global constraints
@@ -30,5 +31,6 @@ plans/
   README.md      this file
   spec.md        brief, pages, data model, design direction, rules
   01-demo.md     Phase 1 tasks
+  02-delivery.md Phase 1.5 tasks
   TODO.md        one box per task, known problems, open questions
 ```

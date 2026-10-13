@@ -6,7 +6,7 @@ import {
   actionStatusLabel,
 } from "@/features/action-items/action-items.constants";
 import type { ActionItem, Person } from "@/types";
-import { formatShortDay } from "@/utils/format";
+import { formatDueDay } from "@/utils/format";
 import { firstName } from "../../utils/format";
 import { ItemActions } from "./item-actions";
 
@@ -44,7 +44,7 @@ export function LinkedTaskRow({
             {firstName(owner.name)}
           </span>
         )}
-        <span className="tabular-nums">Due {formatShortDay(item.dueDate)}</span>
+        <span className="tabular-nums">Due {formatDueDay(item.dueDate)}</span>
         <Badge variant={actionStatusBadge[item.status]}>{actionStatusLabel[item.status]}</Badge>
       </div>
     </li>

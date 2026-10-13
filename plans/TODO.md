@@ -16,6 +16,13 @@
 - [x] Task 12: Mock upload
 - [x] Task 13: States, responsive and README
 
+## Phase 1.5: Delivery (`02-delivery.md`)
+
+- [x] Task 14: Uploads come with a transcript
+- [x] Task 15: The way in for a reviewer
+- [x] Task 16: Live demo
+- [x] Task 17: Final review
+
 ## Phase 2: Live mode
 
 - [ ] Write the plan, only when the user asks

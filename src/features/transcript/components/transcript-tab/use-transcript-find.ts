@@ -30,9 +30,10 @@ export function useTranscriptFind({
   const [value, setValue] = useState(term);
   const [seenTerm, setSeenTerm] = useState(term);
   // The back button changes the term from outside; the box takes it over.
+  // Our own push comes back trimmed; taking it over would eat a space the user just typed.
   if (term !== seenTerm) {
     setSeenTerm(term);
-    setValue(term);
+    if (term !== value.trim()) setValue(term);
   }
   const pushTerm = useDebouncedCallback(
     (next: string) => setParams((prev) => withFind(prev, next), { replace: true }),

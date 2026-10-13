@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import { dueDayOf } from "./date";
 
 /** "Tue 22 Sep, 09:00" */
 export function formatMeetingDate(iso: string): string {
@@ -31,4 +32,9 @@ export function formatDuration(minutes: number): string {
 /** A sentiment score with its sign: "+0.45", "-0.25". */
 export function formatScore(score: number): string {
   return `${score > 0 ? "+" : ""}${score.toFixed(2)}`;
+}
+
+/** "22 Sep" for a stored due date, the day it stands for wherever the reader is. */
+export function formatDueDay(dueDate: string): string {
+  return format(parseISO(dueDayOf(dueDate)), "d MMM");
 }

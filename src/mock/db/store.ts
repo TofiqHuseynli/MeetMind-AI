@@ -6,9 +6,11 @@ import type {
   Meeting,
   Risk,
   SuggestedTask,
+  TranscriptChapter,
   TranscriptSegment,
 } from "@/types";
 import * as seed from "@/mock/seed";
+import { shiftDueDate } from "@/utils/date";
 import { finishDueJobs, startProcessing, type ProcessingJob } from "./processing";
 
 // The only mutable data in the app. Lives in the browser tab and resets on reload.
@@ -22,6 +24,7 @@ export type Store = {
   insights: Insight[];
   /** Taken out once a task is made from one. */
   suggestedTasks: SuggestedTask[];
+  chapters: TranscriptChapter[];
   actionItems: Map<string, ActionItem>;
   /** Meetings being processed, by meeting id, with the result they will have. */
   jobs: Map<string, ProcessingJob>;
@@ -48,12 +51,12 @@ function buildStore(): Store {
   const meetings = seed.meetings.map((m) => ({ ...m, date: shiftDate(m.date, days) }));
   const actionItems = seed.actionItems.map((a) => ({
     ...a,
-    dueDate: shiftDate(a.dueDate, days),
+    dueDate: shiftDueDate(a.dueDate, days),
     createdAt: shiftDate(a.createdAt, days),
   }));
   const suggestedTasks = seed.suggestedTasks.map((s) => ({
     ...s,
-    dueDate: shiftDate(s.dueDate, days),
+    dueDate: shiftDueDate(s.dueDate, days),
   }));
   const built: Store = {
     meetings: new Map(meetings.map((m) => [m.id, m])),
@@ -62,6 +65,7 @@ function buildStore(): Store {
     risks: [...seed.risks],
     insights: [...seed.insights],
     suggestedTasks,
+    chapters: [...seed.transcriptChapters],
     actionItems: new Map(actionItems.map((a) => [a.id, a])),
     jobs: new Map(),
   };

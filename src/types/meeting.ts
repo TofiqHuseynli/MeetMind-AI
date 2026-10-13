@@ -73,6 +73,8 @@ export type Meeting = {
 export type MeetingListItem = Meeting & {
   /** Null until the meeting is ready. */
   actionCounts: ActionCounts | null;
+  /** Whether the meeting has a transcript to read, so its sentences open the insight panel. */
+  hasTranscript: boolean;
 };
 
 /** What the meeting list sorts by. "tasks" is the number of open action items. */

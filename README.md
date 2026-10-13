@@ -21,6 +21,82 @@ npm run build        # type-check and production build into dist/
 npm run lint         # oxlint
 ```
 
+### Deploy
+
+The app is static, so any static host works. On Vercel, import the GitHub repository and keep
+the detected Vite settings (build `npm run build`, output `dist`). `vercel.json` sends every
+path to `index.html`, so links like `/meetings/mtg_mobile_kickoff` open directly.
+
+## A five-minute tour
+
+1. **Dashboard** (`/dashboard`): the last seven days against the seven before, meetings per day
+   for four weeks and the weekly sentiment trend. Recent meetings marked **Transcript** have a
+   full transcript.
+2. **A meeting**: open *Release readiness: Relay 2.0 beta*. The Overview tab has the AI
+   summary, the key decisions and the open action items, under the meeting's sentiment and talk
+   strip.
+3. **Transcript tab**: search for `beta` to see every hit marked and step through them with the
+   arrows. Then **click any sentence**: the right panel shows its AI insight, decision, task and
+   risk. Create a task from there, or take the suggested one.
+4. **Meetings** (`/meetings`): filter by team and project, open the filter panel for status,
+   sentiment, a participant or dates, and sort by any column. The URL keeps it all, so copy it
+   and the same view opens.
+5. **Action items** (`/action-items`): switch to **Board** and drag a card from To do to Done.
+6. **Upload** (`/upload`): drop any `.txt` or `.m4a` file and pick a team and a project. The
+   analysis runs for about 8 seconds, then the page opens the new meeting, which has its own
+   transcript and right panel.
+7. **States**: *Onboarding design critique* failed, so press **Try again** and watch it process.
+   *Billing v2 weekly sync* is still processing and updates on its own. About one call in twelve
+   fails on purpose, so error states with a retry turn up as you click around.
+8. **Phone and dark mode**: narrow the window to 320 px and use the theme toggle in the top bar.
+
+## Concept
+
+After a call, the team needs three things: what was decided, who does what by when, and how
+the meeting went. Recap puts those first, with the summary, decisions and action items on the
+meeting's front page. The transcript is the evidence behind them. Every insight, decision, task
+and risk points at the sentence it came from (`segmentId`), so a click on a sentence answers
+"why is this here?" and turns a remark nobody owned into a task.
+
+Action items from every meeting meet on one board, because that is where the work happens
+after the call. The dashboard answers the manager's question: are we meeting more or less this
+week, and how is the mood?
+
+## Design decisions
+
+- **Soft and light, one accent:** soft, light and rounded, with indigo as the only accent. It
+  marks the main action, the active item and "this week" in charts. Amber marks only search
+  hits, so they are never mistaken for anything else.
+- **People keep their colour:** each person has one of six hues on their avatar, their
+  transcript turns, the talk strip and the participation bars, so you can follow a voice
+  across the page.
+- **The talk strip:** a thin bar of speaker colours that shows who spoke how much at a glance.
+  It appears on every meeting row, on the dashboard and above every meeting tab.
+- **Small, fixed meaning colours:** status, priority and sentiment use green, orange, red and
+  grey, and always come with text, never colour alone.
+- **One typeface:** Manrope in four weights, with tabular numbers so figures line up.
+- **Motion only after an action:** a selection, a drop or a drawer. Nothing moves on page
+  load.
+- **Mobile first:** the sidebar and the insight panel become full-width sheets on phones, and
+  tables scroll sideways rather than drop columns.
+
+## Made with AI tools
+
+The concept, the design direction and the code were made with an AI coding assistant, step
+by step:
+
+- **`plans/`:** holds the brief, the agreed spec (pages, data model, design direction, mock
+  behaviour), the phase plans and a TODO. Each task has a "done when" line and was built only
+  after approval.
+- **Written rules:** the rules the assistant follows, kept as files outside this repository:
+  where a file goes, how a query or a form is written, how colours and states are handled, how
+  a task starts and ends, and the decisions that do not change (mock first, the data flow, URL
+  state, the folder layout). They keep the code consistent across sessions.
+- **shadcn components:** added through the shadcn MCP server, so they come from the registry
+  as written.
+- **Checks:** every task ended with lint, a type-check and a build. Layouts were then checked by
+  eye on a phone and a desktop.
+
 ## Where each part of the brief lives
 
 | Brief | Where to look |

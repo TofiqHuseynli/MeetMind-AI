@@ -1,5 +1,4 @@
 import { delay } from "@/mock/delay";
-import * as seed from "@/mock/seed";
 import type {
   TimeRange,
   TranscriptChapter,
@@ -92,7 +91,7 @@ export async function searchTranscript(
 export async function listChapters(meetingId: string): Promise<TranscriptChapter[]> {
   await delay();
   return copy(
-    seed.transcriptChapters
+    db().chapters
       .filter((chapter) => chapter.meetingId === meetingId)
       .sort((a, b) => a.startSec - b.startSec),
   );

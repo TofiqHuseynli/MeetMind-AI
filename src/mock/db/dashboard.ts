@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, isBefore, parseISO, startOfToday, subDays } from "date-fns";
+import { differenceInCalendarDays, parseISO, startOfToday, subDays } from "date-fns";
 import type {
   DashboardStatistics,
   DayMeetings,
@@ -8,6 +8,7 @@ import type {
   WeekSummary,
 } from "@/types";
 import { delay } from "@/mock/delay";
+import { dueDayOf, toDayValue } from "@/utils/date";
 import { copy, db } from "./store";
 
 const WEEK_DAYS = 7;
@@ -77,7 +78,7 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
   for (const item of db().actionItems.values()) {
     if (item.status === "done") continue;
     openByPriority[item.priority] += 1;
-    if (isBefore(parseISO(item.dueDate), today)) overdue += 1;
+    if (dueDayOf(item.dueDate) < toDayValue(today)) overdue += 1;
   }
   return copy({
     thisWeek: summarizeWeek(0, meetings, today),

@@ -13,7 +13,8 @@ import type {
   Priority,
 } from "@/types";
 import { delay } from "@/mock/delay";
-import { isInDayRange } from "@/utils/day-range";
+import { dueDayOf } from "@/utils/date";
+import { isDayInRange, isInDayRange } from "@/utils/day-range";
 import * as seed from "@/mock/seed";
 import { batch } from "./batch";
 import { compareValues } from "./compare";
@@ -51,7 +52,7 @@ function matchesItem(item: ActionItem, filter: ActionItemFilter): boolean {
   if (filter.priority && item.priority !== filter.priority) return false;
   if (filter.ownerId && item.ownerId !== filter.ownerId) return false;
   if (filter.created && !isInDayRange(item.createdAt, filter.created)) return false;
-  if (filter.due && !isInDayRange(item.dueDate, filter.due)) return false;
+  if (filter.due && !isDayInRange(dueDayOf(item.dueDate), filter.due)) return false;
   return !(filter.open && item.status === "done");
 }
 

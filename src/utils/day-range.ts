@@ -85,11 +85,15 @@ export function dayRangeLabel(
   return "Any time";
 }
 
-/** Whether an ISO date falls on one of the range's days. */
-export function isInDayRange(iso: string, range: DayRange): boolean {
-  const day = toDayValue(parseISO(iso));
+/** Whether a day (yyyy-mm-dd) is one of the range's days. */
+export function isDayInRange(day: string, range: DayRange): boolean {
   if (range.from && day < range.from) return false;
   return !(range.to && day > range.to);
+}
+
+/** Whether an ISO date falls, in local time, on one of the range's days. */
+export function isInDayRange(iso: string, range: DayRange): boolean {
+  return isDayInRange(toDayValue(parseISO(iso)), range);
 }
 
 /**

@@ -1,6 +1,7 @@
-import { addDays, format } from "date-fns";
-import type { ActionItem, Decision } from "@/types";
-import type { PreparedAnalysis } from "@/mock/seed";
+import { addDays } from "date-fns";
+import type { ActionItem, Decision, TranscriptChapter, TranscriptSegment } from "@/types";
+import type { PreparedAnalysis, PreparedTranscript } from "@/mock/seed";
+import { dueDateOf, toDayValue } from "@/utils/date";
 import { RANK_STEP } from "./rank";
 import type { Store } from "./store";
 
@@ -24,12 +25,87 @@ export function startProcessing(
   store.jobs.set(meetingId, { readyAt: Date.now() + afterMs, analysis });
 }
 
+function shortId(): string {
+  return crypto.randomUUID().slice(0, 8);
+}
+
 function lastTodoRank(store: Store): number {
   let last = 0;
   for (const item of store.actionItems.values()) {
     if (item.status === "todo") last = Math.max(last, item.rank);
   }
   return last;
+}
+
+/** The service keeps a due day as midnight UTC of that day. */
+function dueDate(now: Date, inDays: number): string {
+  return dueDateOf(toDayValue(addDays(now, inDays)));
+}
+
+/**
+ * Writes the transcript's lines and chapters, and the insights, risks and suggested tasks tied
+ * to them. Returns the id of a line by its number, for the decisions and tasks.
+ */
+function writeTranscript(
+  store: Store,
+  meetingId: string,
+  transcript: PreparedTranscript,
+  now: Date,
+): (line: number | undefined) => string | undefined {
+  const prefix = shortId();
+  const segments: TranscriptSegment[] = transcript.lines.map((line, index) => ({
+    ...line,
+    id: `seg_${prefix}_${String(index + 1).padStart(2, "0")}`,
+    meetingId,
+  }));
+  const at = (line: number) => {
+    const segment = segments[line - 1];
+    if (!segment) throw new Error(`Prepared transcript has no line ${line}`);
+    return segment;
+  };
+
+  const chapters: TranscriptChapter[] = transcript.chapters.map(([title, first, last], i) => ({
+    id: `chp_${prefix}_${i + 1}`,
+    meetingId,
+    title,
+    firstSegmentId: at(first).id,
+    lastSegmentId: at(last).id,
+    startSec: at(first).startSec,
+    endSec: at(last).endSec,
+  }));
+
+  store.segments = [...store.segments, ...segments];
+  store.chapters = [...store.chapters, ...chapters];
+  store.insights = [
+    ...store.insights,
+    ...transcript.insights.map(({ line, text }) => ({
+      id: `ins_${shortId()}`,
+      meetingId,
+      segmentId: at(line).id,
+      text,
+    })),
+  ];
+  store.risks = [
+    ...store.risks,
+    ...transcript.risks.map(({ line, text, severity }) => ({
+      id: `rsk_${shortId()}`,
+      meetingId,
+      segmentId: at(line).id,
+      text,
+      severity,
+    })),
+  ];
+  store.suggestedTasks = [
+    ...store.suggestedTasks,
+    ...transcript.suggestedTasks.map(({ line, dueInDays, ...task }) => ({
+      ...task,
+      id: `sug_${shortId()}`,
+      meetingId,
+      segmentId: at(line).id,
+      dueDate: dueDate(now, dueInDays),
+    })),
+  ];
+  return (line) => (line === undefined ? undefined : at(line).id);
 }
 
 function finishJob(store: Store, meetingId: string, analysis: PreparedAnalysis): void {
@@ -46,25 +122,27 @@ function finishJob(store: Store, meetingId: string, analysis: PreparedAnalysis):
     participation: analysis.participation,
   });
 
-  const decisions: Decision[] = analysis.decisions.map((text) => ({
-    id: `dec_${crypto.randomUUID().slice(0, 8)}`,
+  const segmentOf = analysis.transcript
+    ? writeTranscript(store, meetingId, analysis.transcript, now)
+    : () => undefined;
+
+  const decisions: Decision[] = analysis.decisions.map(({ text, line }) => ({
+    id: `dec_${shortId()}`,
     meetingId,
+    segmentId: segmentOf(line),
     text,
   }));
   store.decisions = [...store.decisions, ...decisions];
 
   let rank = lastTodoRank(store);
-  for (const task of analysis.actionItems) {
+  for (const { line, dueInDays, ...task } of analysis.actionItems) {
     rank += RANK_STEP;
-    // The service keeps a due day as midnight UTC of that day.
-    const day = format(addDays(now, task.dueInDays), "yyyy-MM-dd");
     const item: ActionItem = {
-      id: `act_${crypto.randomUUID().slice(0, 8)}`,
+      ...task,
+      id: `act_${shortId()}`,
       meetingId,
-      title: task.title,
-      ownerId: task.ownerId,
-      dueDate: `${day}T00:00:00.000Z`,
-      priority: task.priority,
+      segmentId: segmentOf(line),
+      dueDate: dueDate(now, dueInDays),
       status: "todo",
       rank,
       createdAt: now.toISOString(),

@@ -20,6 +20,7 @@ import {
   type UpdateActionItemInput,
   type UpdateActionStatusInput,
 } from "./action-items.schema";
+import { dueDateOf } from "@/utils/date";
 import { dueDay } from "./utils/due-date";
 
 // Today these read the mock db. A real service replaces the bodies, nothing else.
@@ -51,11 +52,6 @@ export async function updateActionStatus(input: UpdateActionStatusInput): Promis
   return db.updateActionItem(id, { status });
 }
 
-// The date field gives a day; the service keeps midnight UTC of that day.
-function dueDateFromDay(day: string): string {
-  return `${day}T00:00:00.000Z`;
-}
-
 async function assertKnownOwner(ownerId: string): Promise<void> {
   const people = await db.listPeople();
   if (!people.some((person) => person.id === ownerId)) {
@@ -75,7 +71,7 @@ export async function createActionItem(input: CreateActionItemInput): Promise<Ac
   await assertReadyMeeting(item.meetingId);
   await assertKnownOwner(item.ownerId);
   return db.createActionItem(
-    { ...item, dueDate: dueDateFromDay(dueDate) },
+    { ...item, dueDate: dueDateOf(dueDate) },
     { status, placement, suggestionId },
   );
 }
@@ -83,7 +79,7 @@ export async function createActionItem(input: CreateActionItemInput): Promise<Ac
 export async function updateActionItem(input: UpdateActionItemInput): Promise<ActionItem> {
   const { id, title, ownerId, dueDate, priority } = updateActionItemSchema.parse(input);
   await assertKnownOwner(ownerId);
-  return db.updateActionItem(id, { title, ownerId, priority, dueDate: dueDateFromDay(dueDate) });
+  return db.updateActionItem(id, { title, ownerId, priority, dueDate: dueDateOf(dueDate) });
 }
 
 export function deleteActionItem(input: ActionItemRef): Promise<void> {
