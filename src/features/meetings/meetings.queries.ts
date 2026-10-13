@@ -7,8 +7,8 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { actionKeys } from "@/features/action-items/action-items.queries";
-import { transcriptKeys } from "@/features/transcript/transcript.queries";
+import { actionKeys } from "@/features/action-items/action-items.keys";
+import { transcriptKeys } from "@/features/transcript/transcript.keys";
 import { downloadFile } from "@/lib/download";
 import type {
   CursorPage,
@@ -40,32 +40,7 @@ import {
   searchProjects,
   updateDecision,
 } from "./meetings.api";
-
-export const meetingKeys = {
-  all: ["meetings"] as const,
-  lists: ["meetings", "list"] as const,
-  list: (query: MeetingListQuery) => ["meetings", "list", query] as const,
-  minList: (query: MinListQueryInput<MeetingMinListQuery>) =>
-    ["meetings", "min-list", query] as const,
-  detail: (id: string) => ["meetings", "detail", id] as const,
-  decisions: (id: string) => ["meetings", "detail", id, "decisions"] as const,
-};
-
-// Teams, projects and people never change in the demo, so they are fetched once.
-export const referenceKeys = {
-  teams: ["teams"] as const,
-  projects: ["projects"] as const,
-  projectSearch: (q: string) => ["projects", "search", q] as const,
-  people: ["people"] as const,
-  teamMinList: (q: string) => ["teams", "min-list", q] as const,
-  projectMinList: (query: MinListQueryInput<ProjectMinListQuery>) =>
-    ["projects", "min-list", query] as const,
-  peopleMinList: (query: MinListQueryInput<PeopleMinListQuery>) =>
-    ["people", "min-list", query] as const,
-};
-
-/** A min list hook's input: the query without the batch fields the hook adds. */
-type MinListQueryInput<T> = Omit<T, "cursor" | "limit"> & { q: string };
+import { meetingKeys, referenceKeys, type MinListQueryInput } from "./meetings.keys";
 
 const PROJECT_BATCH = 20;
 const MIN_LIST_BATCH = 20;

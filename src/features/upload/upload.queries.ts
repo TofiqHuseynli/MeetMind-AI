@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { dashboardKeys } from "@/features/dashboard/dashboard.queries";
-import { meetingKeys } from "@/features/meetings/meetings.queries";
+import { dashboardKeys } from "@/features/dashboard/dashboard.keys";
+import { meetingKeys } from "@/features/meetings/meetings.keys";
 import { uploadMeeting } from "./upload.api";
 
 /** Sends a file; the new meeting shows in the lists and the dashboard at once, processing. */

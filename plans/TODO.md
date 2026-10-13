@@ -14,7 +14,7 @@
 - [x] Task 10: Kanban board
 - [x] Task 11: Dashboard
 - [x] Task 12: Mock upload
-- [ ] Task 13: States, responsive and README (code done; waits for the walk-through sign-off)
+- [x] Task 13: States, responsive and README
 
 ## Phase 2: Live mode
 
@@ -22,9 +22,7 @@
 
 ## Known problems
 
-- `action-items.queries.ts` and `meetings.queries.ts` import each other's query keys (each
-  invalidates the other's lists). It works, since the keys are read only inside hooks, but a
-  small shared keys module would remove the cycle.
+- None open.
 
 ## Open questions
 

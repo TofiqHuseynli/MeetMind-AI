@@ -7,8 +7,8 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { meetingKeys } from "@/features/meetings/meetings.queries";
-import { transcriptKeys } from "@/features/transcript/transcript.queries";
+import { meetingKeys } from "@/features/meetings/meetings.keys";
+import { transcriptKeys } from "@/features/transcript/transcript.keys";
 import {
   ACTION_STATUSES,
   type ActionItem,
@@ -28,20 +28,9 @@ import {
   updateActionItem,
   updateActionStatus,
 } from "./action-items.api";
+import { actionKeys } from "./action-items.keys";
 import { BOARD_BATCH_SIZE } from "./action-items.constants";
 import { findCard, withCard, withoutCard, type BoardColumnData } from "./utils/board-cache";
-
-export const actionKeys = {
-  all: ["action-items"] as const,
-  pages: ["action-items", "page"] as const,
-  page: (query: ActionItemListQuery) => ["action-items", "page", query] as const,
-  meetings: ["action-items", "meeting"] as const,
-  meeting: (meetingId: string, query: ActionItemListQuery) =>
-    ["action-items", "meeting", meetingId, query] as const,
-  boards: ["action-items", "board"] as const,
-  board: (status: ActionStatus, filter: ActionItemFilter) =>
-    ["action-items", "board", status, filter] as const,
-};
 
 const statusChangeKey = ["action-items", "status-change"] as const;
 
