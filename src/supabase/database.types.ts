@@ -935,6 +935,39 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_upload: {
+        Args: {
+          p_participant_ids: string[]
+          p_project_id: string
+          p_source_file_name: string
+          p_source_kind: string
+          p_source_path: string
+          p_title: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          date: string
+          duration_min: number
+          failure_reason: string | null
+          id: string
+          project_id: string
+          sentiment_label: string | null
+          sentiment_score: number | null
+          source_file_name: string
+          source_kind: string
+          source_path: string | null
+          status: string
+          summary: string[]
+          title: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "meetings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       dashboard_statistics: {
         Args: { p_time_zone: string; p_today: string }
         Returns: Json

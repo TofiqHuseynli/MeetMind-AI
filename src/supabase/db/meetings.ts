@@ -96,12 +96,18 @@ export async function meetingMinList(
 
 /**
  * Removes the meetings and everything that belongs to them: the database cascades to their
- * people, transcript, decisions, risks, insights and action items. Unknown ids are skipped.
+ * people, transcript, decisions, risks, insights and action items, and their files leave
+ * Storage. Unknown ids are skipped.
  */
 export async function deleteMeetings(ids: string[]): Promise<void> {
   const known = ids.filter(isUuid);
   if (known.length === 0) return;
+  const files = rows(
+    await supabase().from("meetings").select("source_path").in("id", known),
+  ).flatMap((meeting) => (meeting.source_path ? [meeting.source_path] : []));
   check(await supabase().from("meetings").delete().in("id", known));
+  // The rows are gone first: a file left behind is only space, a row without its file is broken.
+  if (files.length) await supabase().storage.from("meeting-files").remove(files);
 }
 
 /** Moves the meetings to a project, and so to its team. An unknown project is refused. */

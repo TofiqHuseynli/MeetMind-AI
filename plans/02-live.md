@@ -141,6 +141,9 @@ meeting page, which polls until `ready` or `failed`. Replaces Task 12.
 Files: `src/features/upload/`, `src/routes/upload.tsx`, `api/process.ts`,
 `supabase/migrations/` (the bucket and its policies)
 Done when: a dropped file lands in Storage and a `processing` meeting page opens.
+As built: 50 MB is the most a file can be on the Free plan, so the form says so; a transcript is a
+TXT, VTT or SRT file (a DOCX cannot be read as text in a function). Deleting a meeting takes its
+file out of Storage too.
 
 ### Task 24: Analysis with Claude
 `api/analyze.ts`: a text transcript is split into segments (`Name: text` lines, or paragraphs

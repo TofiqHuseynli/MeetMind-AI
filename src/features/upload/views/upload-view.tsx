@@ -1,28 +1,32 @@
+import { useNavigate } from "react-router";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProjects, useTeams } from "@/features/meetings/meetings.queries";
+import { usePeople, useProjects, useTeams } from "@/features/meetings/meetings.queries";
+import { meetingPath } from "@/features/meetings/utils/paths";
 import { UploadForm } from "../components/form/upload-form";
-import { UploadProgress } from "../components/progress/upload-progress";
 import { useUploadMeeting } from "../upload.queries";
-import type { UploadMeetingInput } from "../upload.schema";
-import { useUploadStore } from "../upload.store";
+import type { UploadMeetingFields } from "../upload.schema";
 
-/** The form until a file is sent, then the analysis of the meeting it became. */
+/**
+ * The form until a file is sent, then the meeting it became: that page shows the processing
+ * state and moves on by itself when the analysis is ready.
+ */
 export function UploadView() {
-  const processingMeetingId = useUploadStore((s) => s.processingMeetingId);
-  const track = useUploadStore((s) => s.track);
   const teams = useTeams();
   const projects = useProjects();
+  const people = usePeople();
   const upload = useUploadMeeting();
+  const navigate = useNavigate();
 
-  function send(values: UploadMeetingInput) {
-    upload.mutate(values, { onSuccess: (meeting) => track(meeting.id) });
+  function send(values: UploadMeetingFields, blob: File) {
+    upload.mutate(
+      { ...values, blob },
+      { onSuccess: ({ meeting }) => navigate(meetingPath(meeting.id)) },
+    );
   }
 
   function renderBody() {
-    if (processingMeetingId) return <UploadProgress meetingId={processingMeetingId} />;
-
-    const queries = [teams, projects];
+    const queries = [teams, projects, people];
     if (queries.some((query) => query.isPending)) {
       return <Skeleton className="h-96 rounded-3xl" />;
     }
@@ -30,7 +34,7 @@ export function UploadView() {
     if (failed) {
       return (
         <ErrorState
-          title="Couldn't load the teams and projects"
+          title="Couldn't load the teams, projects and people"
           message={failed.error?.message}
           onRetry={() => queries.forEach((query) => query.refetch())}
         />
@@ -43,12 +47,13 @@ export function UploadView() {
           <ErrorState
             title="The upload didn't go through"
             message={upload.error.message}
-            onRetry={() => upload.variables && send(upload.variables)}
+            onRetry={() => upload.variables && upload.mutate(upload.variables)}
           />
         )}
         <UploadForm
           teams={teams.data ?? []}
           projects={projects.data ?? []}
+          people={people.data ?? []}
           saving={upload.isPending}
           onSubmit={send}
         />

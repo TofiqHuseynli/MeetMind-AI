@@ -56,8 +56,8 @@ export function FileDropzone({
       <div>
         <p className="font-semibold text-foreground">Drop a recording or a transcript here</p>
         <p className="mt-1 text-[13px] text-subtle-foreground">
-          MP3, M4A, WAV, OGG, WEBM or MP4 audio, or a TXT, VTT, SRT or DOCX transcript, up to
-          500 MB
+          MP3, M4A, WAV, OGG, WEBM or MP4 audio, or a TXT, VTT or SRT transcript, up to
+          50 MB
         </p>
       </div>
       <input

@@ -1,17 +1,44 @@
-import * as db from "@/mock/db";
+import { callApi } from "@/lib/api";
+import * as db from "@/supabase/db/uploads";
 import type { Meeting } from "@/types";
-import { uploadMeetingSchema, type UploadMeetingInput } from "./upload.schema";
+import { uploadMeetingInputSchema, type UploadMeetingInput } from "./upload.schema";
 
-// Today these read the mock db. A real service replaces the bodies, nothing else.
+// The file goes from the browser straight to Storage; the meeting is made with its people;
+// api/process starts the work on it. The project must be one of the chosen team's.
 
-/**
- * Sends the file and where the meeting belongs; the service answers with the new meeting,
- * still processing. The project must be one of the chosen team's.
- */
-export async function uploadMeeting(input: UploadMeetingInput): Promise<Meeting> {
-  const { file, title, teamId, projectId } = uploadMeetingSchema.parse(input);
-  const projects = await db.listProjects();
-  const project = projects.find((p) => p.id === projectId);
-  if (project?.teamId !== teamId) throw new Error("Pick a project of the chosen team.");
-  return db.createUpload({ title, projectId, file });
+/** The new meeting, processing, and whether its work could be started. */
+export type UploadResult = { meeting: Meeting; started: boolean };
+
+export async function uploadMeeting(
+  input: UploadMeetingInput,
+  projectTeamId: (projectId: string) => string | undefined,
+): Promise<UploadResult> {
+  const { blob, file, title, teamId, projectId, participantIds } =
+    uploadMeetingInputSchema.parse(input);
+  if (projectTeamId(projectId) !== teamId) throw new Error("Pick a project of the chosen team.");
+
+  const path = db.storagePathFor(file.name);
+  await db.uploadMeetingFile(path, blob);
+  let meeting: Meeting;
+  try {
+    meeting = await db.createUpload({
+      title,
+      projectId,
+      kind: file.kind,
+      fileName: file.name,
+      path,
+      participantIds,
+    });
+  } catch (error) {
+    await db.removeMeetingFile(path);
+    throw error;
+  }
+
+  // The meeting and its file are kept even if the start fails: Retry on its page starts it.
+  try {
+    await callApi("process", { meetingId: meeting.id });
+    return { meeting, started: true };
+  } catch {
+    return { meeting, started: false };
+  }
 }
