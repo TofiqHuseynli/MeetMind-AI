@@ -29,9 +29,8 @@ const sortColumn: Record<MeetingSortField, string> = {
 };
 
 /**
- * One page of meetings, filtered, counted and sorted by the database, as the mock did it:
- * missing values last in both directions, ties newest first and then by id, so a page never
- * shifts between two requests.
+ * One page of meetings, filtered, counted and sorted by the database: missing values last in
+ * both directions, ties newest first and then by id, so a page never shifts between requests.
  */
 export async function listMeetings(query: MeetingListQuery): Promise<Page<MeetingListItem>> {
   const { filter, sort } = query;

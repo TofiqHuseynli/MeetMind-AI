@@ -35,14 +35,15 @@
 - [x] Task 24: Analysis with the model (Gemini first)
 - [x] Task 25: Speech to text with Deepgram
 - [x] Task 26: Write with AI
-- [ ] Task 27: Mock removed
+- [x] Task 27: Mock removed
 
 ## Known problems
 
 - Since sign-in, supabase-js shares a chunk with zod (`schemas-*.js`, about 490 kB before gzip)
   that every page loads, and the build warns again about chunks over 500 kB. A separate vendor
   chunk for supabase-js (rolldown `advancedChunks`) would split it.
-- The free tier is slow or overloaded at times; the analysis tries three models in turn. A start
+- The free tier is slow, overloaded or out of quota at times; the analysis tries three models in
+  turn, each with its own quota. A start
   that never reaches api/process leaves the meeting processing with no way to retry it.
 
 ## Open questions

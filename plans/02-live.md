@@ -197,3 +197,6 @@ vars and how to run locally. `CLAUDE.md`, `spec.md` and the skills lose the mock
 the data layer and `api/` rules.
 Files: `src/mock/`, `README.md`, `CLAUDE.md`, `plans/spec.md`, `.claude/skills/`
 Done when: the deployed app runs on the real services and `src/mock/` no longer exists.
+As built: the README describes the services, the env vars, access by invitation and how to run
+locally (`npx vercel dev`). A model whose free quota is used up (429) hands over to the next one,
+as an overloaded one (503) does.

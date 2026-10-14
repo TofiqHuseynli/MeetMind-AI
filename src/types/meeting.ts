@@ -15,16 +15,6 @@ export type MeetingSource = {
   fileName: string;
 };
 
-/**
- * What an upload sends. The file is only described, by name, size and kind: the mock stores
- * no file. The team comes with the project.
- */
-export type MeetingUpload = {
-  title: string;
-  projectId: string;
-  file: { name: string; size: number; kind: SourceKind };
-};
-
 /** Score runs from -1 (negative) to 1 (positive). */
 export type MeetingSentiment = {
   score: number;

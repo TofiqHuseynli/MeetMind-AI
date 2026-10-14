@@ -4,8 +4,8 @@ import type { Database } from "./database.types";
 let client: SupabaseClient<Database> | null = null;
 
 /**
- * The one Supabase client of the app. It is made on first use, so the features that still run
- * on the mock build and run without the env vars.
+ * The one Supabase client of the app, made on first use: a missing env var then fails where
+ * the data is read, with a message that says which, instead of at startup.
  */
 export function supabase(): SupabaseClient<Database> {
   if (client) return client;

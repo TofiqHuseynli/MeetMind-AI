@@ -128,9 +128,11 @@ export function gemini(): LanguageModel {
         try {
           return textOf(await answerWith(model, key, request));
         } catch (error) {
-          // Overloaded after its retries: the next model may have room.
-          if (!(error instanceof HttpError) || error.status !== 503) throw error;
-          console.warn(`${model} is overloaded; trying the next model.`);
+          // Overloaded after its retries, or its free quota used up: each model has its own, so
+          // the next one may have room.
+          const full = error instanceof HttpError && (error.status === 503 || error.status === 429);
+          if (!full) throw error;
+          console.warn(`${model} is overloaded or out of quota; trying the next model.`);
           busy = error;
         }
       }

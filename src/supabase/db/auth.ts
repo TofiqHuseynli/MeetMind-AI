@@ -2,7 +2,7 @@ import type { Person } from "@/types";
 import { supabase } from "../client";
 import { toPerson } from "../mappers/reference";
 
-// Supabase answers a failed sign-in with an error object; these throw it, as the mock db does,
+// Supabase answers a failed sign-in with an error object; these throw it, as every read does,
 // so the mutation hooks show it.
 
 export async function signIn(email: string, password: string): Promise<void> {

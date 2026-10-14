@@ -14,7 +14,7 @@ import { useMeeting, usePeople, useProjects, useTeams } from "../meetings.querie
 
 const noPeople: Person[] = [];
 
-// The mock reports no progress of its own, so the page shows where any analysis stands once
+// The pipeline reports no step of its own, so the page shows where any analysis stands once
 // the file is in.
 const processingSteps: ProcessingStep[] = [
   { label: "Recording received", state: "done" },

@@ -49,7 +49,7 @@ export function containsPattern(q: string): string {
 }
 
 /**
- * A day range as the moments that bound it, in the reader's time zone, as the mock compared
+ * A day range as the moments that bound it, in the reader's time zone, comparing whole
  * days: from the start of `from` up to, not including, the start of the day after `to`.
  */
 export function dayRangeBounds(range: DayRange): { from?: string; before?: string } {

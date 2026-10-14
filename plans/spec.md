@@ -75,32 +75,20 @@ Types live in `src/types/`. Ids are strings. Dates are ISO strings.
 decisions, action items and risks with that id, and "Create task" pre-fills `meetingId`,
 `segmentId` and the sentence.
 
-## Mock content
+## Data and services
 
-- One fictional product company with two teams (Product and Engineering, for example), three to
-  four projects, eight to ten people.
-- Eight to ten meetings over the last four weeks so the dashboard has a trend. Three of them carry
-  a full transcript (40 to 80 segments), summary, chapters, decisions, action items, suggested tasks, risks and insights.
-  The rest carry a summary and a few action items.
-- Transcripts read like real meetings: people interrupt, decide, postpone, raise risks. English.
-  No real company, person or product; no lorem ipsum.
-- One meeting is `failed` and one can be `processing` so the states are visible.
-
-## Mock behaviour
-
-- `delay()` waits 300 to 900 ms, and a small share of calls fail with a thrown error, so loading
-  and error states show in the demo. The share is one number in `mock/delay.ts` and can be set to
-  zero.
-- The db is in-memory in the browser tab. It resets on reload. Saving it to `localStorage` with a
-  "Reset demo data" action is a possible later task, not part of Phase 1.
-- Upload creates a `processing` meeting from a prepared template, marks it `ready` after a few
-  seconds, and the upload page moves to it. The file itself is only read for its name and size.
-- Processing is a job in the db with the result the meeting will have (`mock/seed/analyses.ts`:
-  one prepared analysis per seed meeting that is processing or failed, and a template for
-  uploads, with a transcript, chapters, insights, risks and suggested tasks). The first read
-  after its time writes the summary, sentiment, participation, the transcript and its links,
-  decisions and action items. An upload or a retried meeting takes 8 s; the seed's processing
-  meeting finishes 90 s after the demo opens.
+- The data is real from Phase 2 on: Supabase holds it (Postgres with row level security, a
+  private Storage bucket for the files, email and password sign-in by invitation). The
+  database starts with the real teams, projects and people (`supabase/seed.sql`); meetings come
+  from uploads. The Phase 1 mock (fictional seed, in-memory db, simulated delays and failures)
+  was removed in Task 27.
+- An upload puts the file in Storage, makes the meeting `processing` with who took part, and
+  calls `api/process`. A recording goes through Deepgram first; then the numbered lines go to
+  the model (Gemini on its free tier, behind an adapter), the answer is checked and
+  `finish_analysis` writes it all in one transaction. The meeting ends `ready`, or `failed`
+  with the reason, which the meeting page shows with "Try again".
+- Failures are real, not simulated: the network, a busy free tier, a file the analysis cannot
+  read. Every list and section shows its error state with a retry.
 
 ## Design direction
 
@@ -130,11 +118,11 @@ Agreed in Task 4 and reworked on 2026-10-07 to the "v2 Light" boards of the desi
 
 ## Rules
 
-- Mock only, English only, shadcn/ui primitives on Radix restyled to our tokens. The full list
-  is in the project rules under "Decisions already made".
+- English only, shadcn/ui primitives on Radix restyled to our tokens. The full list is in the
+  project rules under "Decisions already made".
 - Every list and detail has loading, empty and error states with a retry. Processing meetings
   show the processing state.
 - Filters, search, the sort, the page and the selected tab live in the URL.
-- Built for production on a mock: lists are filtered, counted, sorted and paged by the service,
-  never in the browser, so a real backend changes only `api.ts`. Shared pieces (the data table)
+- Lists are filtered, counted, sorted and paged by the database, never in the browser; a
+  feature reaches it only through its `api.ts` and the data layer in `src/supabase/db/`. Shared pieces (the data table)
   are generic and grow by adding features, not by rewriting.
