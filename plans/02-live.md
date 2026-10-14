@@ -10,7 +10,8 @@ Decisions (chat, 2026-10-13):
 - Supabase: Postgres read and written from the browser with `supabase-js` (PostgREST, RPC, RLS),
   Storage for the uploaded files. Provisioned through the Vercel Marketplace so the env vars land
   on Vercel; the Supabase CLI holds migrations and generates the row types.
-- Backend: Vercel Functions in `api/` (Node). They hold the keys (Supabase service role, Deepgram,
+- Backend: Vercel Functions in `api/` (Node). Their helpers live in `api/_lib/`: Vercel makes every
+  other file in `api/` a public function. They hold the keys (Supabase service role, Deepgram,
   Anthropic). The browser never calls Deepgram or Claude. Local dev runs them with `vercel dev`.
 - Claude: `claude-opus-5-5` with structured output. The transcript is sent line by line with its
   segment ids, so every decision, task, risk and insight points at its sentence.
@@ -72,7 +73,7 @@ An invitation or a reset email opens `/set-password`, signed in by its link, to 
 password. `api/` gets a helper that checks the session token on every
 request. No sign-up page: invitations come from the Supabase dashboard.
 Files: `src/features/auth/`, `src/routes/login.tsx`, `src/routes/root-layout.tsx`,
-`src/router.tsx`, `src/components/layout/`, `api/lib/auth.ts`, `supabase/migrations/`
+`src/router.tsx`, `src/components/layout/`, `api/_lib/auth.ts`, `supabase/migrations/`
 Done when: a signed-out visitor sees only `/login`, and after sign-in every page reads as before.
 
 ## Reads
@@ -148,7 +149,7 @@ the structured answer (summary, overall and per-segment sentiment, chapters, dec
 items with owner, due date and priority, risks, insights, suggested tasks) is written to the
 database with participation computed from the segments, and the meeting becomes `ready`, or
 `failed` with the reason. Retry runs it again.
-Files: `api/analyze.ts`, `api/lib/` (Supabase admin client, the Claude call and its schema)
+Files: `api/analyze.ts`, `api/_lib/` (Supabase admin client, the Claude call and its schema)
 Done when: an uploaded transcript file becomes a ready meeting with linked items on every tab.
 
 ### Task 25: Speech to text with Deepgram
