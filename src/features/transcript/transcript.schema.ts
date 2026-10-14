@@ -10,3 +10,11 @@ export const suggestionRefSchema = z.object({
 });
 
 export type SuggestionRef = z.infer<typeof suggestionRefSchema>;
+
+export const nameSpeakerSchema = z.object({
+  meetingId: z.string().min(1),
+  label: z.string().min(1).max(120),
+  personId: z.string().min(1, "Pick who it is."),
+});
+
+export type NameSpeakerInput = z.infer<typeof nameSpeakerSchema>;

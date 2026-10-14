@@ -10,7 +10,7 @@ const bodySchema = z.object({ meetingId: z.uuid() });
  * The work on an uploaded or retried meeting, which is processing with its file in Storage. A
  * transcript is analysed here and now, so the function lives until the meeting is ready or
  * failed (Vercel would stop work left after the answer); the browser does not wait for it, the
- * meeting page polls. A recording goes to speech to text first (Task 25).
+ * meeting page polls. A recording goes through speech to text first, in the same call.
  */
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -30,10 +30,6 @@ export async function POST(request: Request): Promise<Response> {
     }
     if (!meeting.source_path) throw new HttpError(409, "That meeting has no file to process.");
 
-    if (meeting.source_kind === "audio") {
-      // Speech to text (Task 25) starts here and calls the analysis when its lines are in.
-      return json({ meetingId: meeting.id, next: "transcription" }, 202);
-    }
     const status = await analyzeMeeting(meeting.id);
     return json({ meetingId: meeting.id, status });
   } catch (error) {

@@ -2,6 +2,7 @@ import * as suggestionsDb from "@/supabase/db/suggestions";
 import * as transcriptDb from "@/supabase/db/transcript";
 import type {
   TimeRange,
+  SpeakerLabel,
   TranscriptChapter,
   TranscriptLinks,
   TranscriptPage,
@@ -9,7 +10,12 @@ import type {
   TranscriptSearchResult,
   TranscriptTimeline,
 } from "@/types";
-import { suggestionRefSchema, type SuggestionRef } from "./transcript.schema";
+import {
+  nameSpeakerSchema,
+  suggestionRefSchema,
+  type NameSpeakerInput,
+  type SuggestionRef,
+} from "./transcript.schema";
 
 // Everything here reads and writes Supabase (src/supabase/db/).
 
@@ -44,4 +50,13 @@ export function fetchTranscriptLinks(meetingId: string): Promise<TranscriptLinks
 export function dismissSuggestion(input: SuggestionRef): Promise<void> {
   const { id } = suggestionRefSchema.parse(input);
   return suggestionsDb.dismissSuggestedTask(id);
+}
+
+export function fetchSpeakers(meetingId: string): Promise<SpeakerLabel[]> {
+  return transcriptDb.listSpeakers(meetingId);
+}
+
+export async function nameSpeaker(input: NameSpeakerInput): Promise<void> {
+  const { meetingId, label, personId } = nameSpeakerSchema.parse(input);
+  return transcriptDb.nameSpeaker(meetingId, label, personId);
 }

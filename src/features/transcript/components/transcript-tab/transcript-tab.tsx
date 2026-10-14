@@ -13,6 +13,7 @@ import { SegmentDetails } from "../segment-details/segment-details";
 import { LoadMoreLines } from "./load-more-lines";
 import { TranscriptCard } from "./transcript-card";
 import { TranscriptSkeleton } from "./transcript-skeleton";
+import { UnnamedSpeakers } from "./unnamed-speakers";
 
 /**
  * The meeting's Transcript tab: who said what and when, a page of lines at a time, and what the
@@ -91,41 +92,44 @@ export function TranscriptTab({
   const later = last.total - (last.start + last.items.length);
 
   return (
-    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <TranscriptCard
-        meeting={meeting}
-        segments={segments}
-        personById={personById}
-        durationSec={first.durationSec}
-        range={range}
-        onOpenAt={setAround}
-        onRangeChange={changeRange}
-        before={
-          earlier > 0 && (
-            <LoadMoreLines
-              direction="earlier"
-              count={Math.min(earlier, TRANSCRIPT_PAGE_SIZE)}
-              loading={transcript.isFetchingPreviousPage}
-              failed={transcript.isFetchPreviousPageError}
-              onLoad={() => transcript.fetchPreviousPage()}
-              className="border-b border-border"
-            />
-          )
-        }
-        after={
-          later > 0 && (
-            <LoadMoreLines
-              direction="later"
-              count={Math.min(later, TRANSCRIPT_PAGE_SIZE)}
-              loading={transcript.isFetchingNextPage}
-              failed={transcript.isFetchNextPageError}
-              onLoad={() => transcript.fetchNextPage()}
-              className="border-t border-border"
-            />
-          )
-        }
-      />
-      <SegmentDetails meeting={meeting} segments={segments} personById={personById} />
+    <div className="grid gap-4">
+      <UnnamedSpeakers meeting={meeting} personById={personById} />
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <TranscriptCard
+          meeting={meeting}
+          segments={segments}
+          personById={personById}
+          durationSec={first.durationSec}
+          range={range}
+          onOpenAt={setAround}
+          onRangeChange={changeRange}
+          before={
+            earlier > 0 && (
+              <LoadMoreLines
+                direction="earlier"
+                count={Math.min(earlier, TRANSCRIPT_PAGE_SIZE)}
+                loading={transcript.isFetchingPreviousPage}
+                failed={transcript.isFetchPreviousPageError}
+                onLoad={() => transcript.fetchPreviousPage()}
+                className="border-b border-border"
+              />
+            )
+          }
+          after={
+            later > 0 && (
+              <LoadMoreLines
+                direction="later"
+                count={Math.min(later, TRANSCRIPT_PAGE_SIZE)}
+                loading={transcript.isFetchingNextPage}
+                failed={transcript.isFetchNextPageError}
+                onLoad={() => transcript.fetchNextPage()}
+                className="border-t border-border"
+              />
+            )
+          }
+        />
+        <SegmentDetails meeting={meeting} segments={segments} personById={personById} />
+      </div>
     </div>
   );
 }

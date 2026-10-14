@@ -997,9 +997,17 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      name_speaker: {
+        Args: { p_label: string; p_meeting_id: string; p_person_id: string }
+        Returns: undefined
+      }
       rank_at: {
         Args: { p_except: string; p_placement: Json; p_status: string }
         Returns: number
+      }
+      recount_participation: {
+        Args: { p_meeting_id: string }
+        Returns: undefined
       }
       renumber_action_ranks: { Args: never; Returns: undefined }
       search_transcript: {

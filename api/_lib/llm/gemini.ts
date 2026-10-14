@@ -8,6 +8,8 @@ import type { JsonRequest, JsonSchema, LanguageModel } from "./types.js";
 // light one next, the newest last (the "latest" alias queued for minutes in testing). Older
 // names close to new users (2.5 did). GEMINI_MODEL, a comma list, picks others.
 const DEFAULT_MODELS = ["gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-flash-latest"];
+// A small job somebody waits on: the light model answered in two seconds in testing.
+const FAST_MODELS = ["gemini-flash-lite-latest", "gemini-3.5-flash"];
 // The free tier answers 503 "high demand" now and then; a short wait usually clears it.
 const RETRIES = 2;
 const RETRY_WAIT_MS = 4000;
@@ -121,7 +123,8 @@ export function gemini(): LanguageModel {
     name: `gemini/${models[0]}`,
     async generateJson(request: JsonRequest) {
       let busy: unknown;
-      for (const model of models) {
+      const order = request.fast && !process.env.GEMINI_MODEL ? FAST_MODELS : models;
+      for (const model of order) {
         try {
           return textOf(await answerWith(model, key, request));
         } catch (error) {

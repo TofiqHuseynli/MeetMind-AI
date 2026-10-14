@@ -173,12 +173,20 @@ starts the analysis. The model matches the labels to the participants; a label i
 Files: `api/transcribe.ts`, `api/deepgram-callback.ts`, `src/features/meetings/` (the speaker
 naming), `src/features/transcript/`
 Done when: an uploaded audio file becomes a ready meeting with named speakers.
+As built: no callback. `api/_lib/transcribe.ts` sends Deepgram (Nova-3, diarized, language
+found) a signed link and waits: an hour of audio takes well under a minute, inside the
+function's time, and it works on localhost where a callback cannot reach. The turns then go
+through the same analysis as a transcript file. "Who is Speaker 1?" sits above the transcript
+(`name_speaker`, which counts the talk shares again).
 
 ### Task 26: Write with AI
 `api/draft-task.ts` sends the sentence, the lines around it and the participants to the model and
 returns the task fields; replaces the mock's heuristic behind the same `draftTask` signature.
 Files: `api/draft-task.ts`, `src/supabase/db/suggestions.ts`
 Done when: "Write with AI" in the task dialog fills the fields from the model.
+As built: `api/_lib/draft.ts` sends the sentence, three lines either side and the participants; a
+small job somebody waits on, so the light model goes first (about three seconds, against a
+minute on the big one). Owner and day are checked like the analysis checks them.
 
 ## Close
 

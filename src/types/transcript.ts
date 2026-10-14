@@ -93,3 +93,9 @@ export type TranscriptLinks = {
   suggestedTasks: SuggestedTask[];
   risks: Risk[];
 };
+
+/** A voice of a transcript and the person it is; null while nobody has said who it is. */
+export type SpeakerLabel = {
+  label: string;
+  personId: string | null;
+};

@@ -6,14 +6,17 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { meetingKeys } from "@/features/meetings/meetings.keys";
 import type { TimeRange, TranscriptPageQuery } from "@/types";
 import {
   dismissSuggestion,
   fetchChapters,
+  fetchSpeakers,
   fetchTimeline,
   fetchTranscriptLinks,
   fetchTranscriptPage,
   fetchTranscriptSearch,
+  nameSpeaker,
 } from "./transcript.api";
 import { transcriptKeys } from "./transcript.keys";
 
@@ -102,5 +105,31 @@ export function useDismissSuggestion() {
       queryClient.invalidateQueries({ queryKey: transcriptKeys.meetingLinks(meetingId) }),
     onError: (error) =>
       toast.error("Couldn't remove the suggestion", { description: error.message }),
+  });
+}
+
+/** The meeting's voices and who each is, for "Who is Speaker 1?". */
+export function useSpeakers(meetingId: string) {
+  return useQuery({
+    queryKey: transcriptKeys.speakers(meetingId),
+    queryFn: () => fetchSpeakers(meetingId),
+  });
+}
+
+/**
+ * Says who a voice is. Every line of it changes speaker, so the transcript, its links and
+ * timeline, the decisions (who said them) and the meeting's talk shares reload.
+ */
+export function useNameSpeaker() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: nameSpeaker,
+    onSuccess: (_, { meetingId }) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: transcriptKeys.all }),
+        queryClient.invalidateQueries({ queryKey: meetingKeys.detail(meetingId) }),
+        queryClient.invalidateQueries({ queryKey: meetingKeys.lists }),
+      ]),
+    onError: (error) => toast.error("Couldn't name the speaker", { description: error.message }),
   });
 }

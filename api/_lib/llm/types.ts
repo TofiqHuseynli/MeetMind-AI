@@ -11,6 +11,8 @@ export type JsonRequest = {
   system: string;
   prompt: string;
   schema: JsonSchema;
+  /** A small job a person waits on (a dialog button): the quickest model first. */
+  fast?: boolean;
 };
 
 /** A language model that answers with JSON in the shape asked for. */

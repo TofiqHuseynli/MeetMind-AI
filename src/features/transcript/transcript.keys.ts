@@ -13,4 +13,5 @@ export const transcriptKeys = {
     ["transcript", "search", meetingId, q, range ?? null] as const,
   chapters: (meetingId: string) => ["transcript", "chapters", meetingId] as const,
   timeline: (meetingId: string) => ["transcript", "timeline", meetingId] as const,
+  speakers: (meetingId: string) => ["transcript", "speakers", meetingId] as const,
 };

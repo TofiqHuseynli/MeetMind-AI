@@ -3,6 +3,7 @@ import type {
   TranscriptChapter,
   TranscriptLinks,
   TranscriptPage,
+  SpeakerLabel,
   TranscriptPageQuery,
   TranscriptSearchResult,
   TranscriptTimeline,
@@ -156,4 +157,32 @@ export async function getTimeline(meetingId: string): Promise<TranscriptTimeline
     if (batch.length < MAX_ROWS) break;
   }
   return { lines, durationSec: lines.at(-1)?.endSec ?? 0 };
+}
+
+/** The meeting's voices and who each is; the unknown ones the meeting page asks about. */
+export async function listSpeakers(meetingId: string): Promise<SpeakerLabel[]> {
+  if (!isUuid(meetingId)) return [];
+  const found = rows(
+    await supabase()
+      .from("meeting_speakers")
+      .select("label, person_id")
+      .eq("meeting_id", meetingId)
+      .order("label"),
+  );
+  return found.map((row) => ({ label: row.label, personId: row.person_id }));
+}
+
+/** Says who a voice is; the talk shares are counted again with it. */
+export async function nameSpeaker(
+  meetingId: string,
+  label: string,
+  personId: string,
+): Promise<void> {
+  check(
+    await supabase().rpc("name_speaker", {
+      p_meeting_id: meetingId,
+      p_label: label,
+      p_person_id: personId,
+    }),
+  );
 }

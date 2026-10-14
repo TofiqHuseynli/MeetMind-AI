@@ -1,4 +1,4 @@
-import * as db from "@/mock/db";
+import { callApi } from "@/lib/api";
 import * as itemsDb from "@/supabase/db/action-items";
 import type {
   ActionBoardColumnPage,
@@ -12,6 +12,7 @@ import {
   actionItemRefSchema,
   createActionItemSchema,
   draftActionItemSchema,
+  taskFieldsSchema,
   updateActionItemSchema,
   updateActionStatusSchema,
   type ActionItemRef,
@@ -22,10 +23,9 @@ import {
   type UpdateActionStatusInput,
 } from "./action-items.schema";
 import { dueDateOf } from "@/utils/date";
-import { dueDay } from "./utils/due-date";
 
-// Reads and writes go to Supabase (src/supabase/db/). "Write with AI" still uses the mock db
-// until Task 26 moves it. The database checks the owner, the meeting and the sentence itself.
+// Reads and writes go to Supabase (src/supabase/db/); "Write with AI" to api/draft-task. The
+// database checks the owner, the meeting and the sentence itself.
 
 /** One page of a meeting's items, filtered and sorted by the service. */
 export function fetchMeetingActionItems(
@@ -73,14 +73,11 @@ export function deleteActionItem(input: ActionItemRef): Promise<void> {
   return itemsDb.deleteActionItem(id);
 }
 
-/** The task fields the analysis drafts from a sentence, as the task form takes them. */
+/**
+ * The task fields the model drafts from a sentence (api/draft-task), as the task form takes
+ * them; the due date comes as a day. They are parsed like anything the form sends.
+ */
 export async function draftActionItem(input: DraftActionItemInput): Promise<TaskFields> {
   const { segmentId } = draftActionItemSchema.parse(input);
-  const draft = await db.draftTask(segmentId);
-  return {
-    title: draft.title,
-    ownerId: draft.ownerId,
-    dueDate: dueDay(draft.dueDate),
-    priority: draft.priority,
-  };
+  return taskFieldsSchema.parse(await callApi<unknown>("draft-task", { segmentId }));
 }

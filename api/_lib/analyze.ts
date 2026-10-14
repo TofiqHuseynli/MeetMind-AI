@@ -9,15 +9,15 @@ import {
 } from "./analysis.js";
 import { languageModel } from "./llm/index.js";
 import { supabaseAdmin } from "./supabase-admin.js";
+import { transcribeRecording } from "./transcribe.js";
 import { parseTranscript, type ParsedLine } from "./transcript-parse.js";
 
-// The analysis of one processing meeting, from its file (or its lines, for a recording that
-// speech to text has written) to a ready meeting. Any failure leaves the meeting failed, with a
-// reason the meeting page shows and Retry starts again from.
+// The analysis of one processing meeting, from its file to a ready meeting. A recording is
+// turned into speaker turns first (Deepgram); then a recording and a transcript go the same way.
+// Any failure leaves the meeting failed, with a reason the meeting page shows and Retry starts
+// again from.
 
 const REASON_MAX = 300;
-
-type TimedLine = ParsedLine;
 
 async function readMeeting(meetingId: string) {
   const db = supabaseAdmin();
@@ -43,27 +43,10 @@ async function readMeeting(meetingId: string) {
 }
 
 /** A text transcript's lines, from its file in Storage. */
-async function linesOfFile(path: string, fileName: string): Promise<TimedLine[]> {
+async function linesOfFile(path: string, fileName: string): Promise<ParsedLine[]> {
   const { data, error } = await supabaseAdmin().storage.from("meeting-files").download(path);
   if (error || !data) throw new Error("The transcript file could not be read from Storage.");
   return parseTranscript(await data.text(), fileName);
-}
-
-/** A recording's lines, which speech to text has already written. */
-async function linesInDatabase(meetingId: string): Promise<TimedLine[]> {
-  const { data, error } = await supabaseAdmin()
-    .from("transcript_segments")
-    .select("speaker_label, start_sec, end_sec, text")
-    .eq("meeting_id", meetingId)
-    .order("position");
-  if (error) throw error;
-  if (!data?.length) throw new Error("The recording has not been turned into text yet.");
-  return data.map((s) => ({
-    speaker: s.speaker_label,
-    startSec: s.start_sec,
-    endSec: s.end_sec,
-    text: s.text,
-  }));
 }
 
 /**
@@ -99,11 +82,11 @@ async function markFailed(meetingId: string, reason: string): Promise<void> {
 export async function analyzeMeeting(meetingId: string): Promise<"ready" | "failed"> {
   try {
     const { meeting, participants } = await readMeeting(meetingId);
-    const fromFile = meeting.source_kind === "transcript";
-    if (fromFile && !meeting.source_path) throw new Error("The meeting has no file.");
-    const lines = fromFile
-      ? await linesOfFile(meeting.source_path ?? "", meeting.source_file_name)
-      : await linesInDatabase(meeting.id);
+    if (!meeting.source_path) throw new Error("The meeting has no file.");
+    const lines =
+      meeting.source_kind === "audio"
+        ? await transcribeRecording(meeting.source_path)
+        : await linesOfFile(meeting.source_path, meeting.source_file_name);
 
     const labels = [...new Set(lines.map((line) => line.speaker))];
     const known = matchByName(labels, participants);
@@ -124,16 +107,14 @@ export async function analyzeMeeting(meetingId: string): Promise<"ready" | "fail
     );
 
     const mood = new Map(checked.segment_sentiments.map((s) => [s.position, s.sentiment]));
-    const segments = fromFile
-      ? lines.map((line, position) => ({
-          position,
-          speaker_label: line.speaker,
-          start_sec: line.startSec,
-          end_sec: line.endSec,
-          text: line.text,
-          sentiment: mood.get(position) ?? "neutral",
-        }))
-      : null;
+    const segments = lines.map((line, position) => ({
+      position,
+      speaker_label: line.speaker,
+      start_sec: line.startSec,
+      end_sec: line.endSec,
+      text: line.text,
+      sentiment: mood.get(position) ?? "neutral",
+    }));
 
     const { error } = await supabaseAdmin().rpc("finish_analysis", {
       p_meeting_id: meeting.id,
