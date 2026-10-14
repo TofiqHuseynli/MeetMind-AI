@@ -972,6 +972,10 @@ export type Database = {
         Args: { p_time_zone: string; p_today: string }
         Returns: Json
       }
+      finish_analysis: {
+        Args: { p_analysis: Json; p_meeting_id: string }
+        Returns: undefined
+      }
       move_action_item: {
         Args: { p_id: string; p_placement: Json; p_status: string }
         Returns: {

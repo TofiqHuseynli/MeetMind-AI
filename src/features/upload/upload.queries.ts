@@ -15,13 +15,8 @@ export function useUploadMeeting() {
 
   return useMutation({
     mutationFn: (input: UploadMeetingInput) => uploadMeeting(input, teamOf),
-    onSuccess: ({ meeting, started }) => {
-      if (started) toast.success("File received", { description: meeting.title });
-      else {
-        toast.warning("The file is in, but its analysis did not start", {
-          description: "Open the meeting later and try again.",
-        });
-      }
+    onSuccess: (meeting) => {
+      toast.success("File received, analysing it", { description: meeting.title });
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: meetingKeys.all }),
         queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),

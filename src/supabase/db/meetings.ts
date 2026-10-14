@@ -126,12 +126,12 @@ export async function moveMeetings(ids: string[], projectId: string): Promise<vo
 }
 
 /**
- * Starts processing again for the failed meetings among `ids`; returns how many. The analysis
- * picks up a processing meeting from there (Task 24).
+ * Sets the failed meetings among `ids` processing again; returns their ids, for api/process to
+ * start each.
  */
-export async function retryProcessing(ids: string[]): Promise<number> {
+export async function retryProcessing(ids: string[]): Promise<string[]> {
   const known = ids.filter(isUuid);
-  if (known.length === 0) return 0;
+  if (known.length === 0) return [];
   const updated = rows(
     await supabase()
       .from("meetings")
@@ -140,5 +140,5 @@ export async function retryProcessing(ids: string[]): Promise<number> {
       .eq("status", "failed")
       .select("id"),
   );
-  return updated.length;
+  return updated.map((meeting) => meeting.id);
 }

@@ -21,7 +21,7 @@ export function UploadView() {
   function send(values: UploadMeetingFields, blob: File) {
     upload.mutate(
       { ...values, blob },
-      { onSuccess: ({ meeting }) => navigate(meetingPath(meeting.id)) },
+      { onSuccess: (meeting) => navigate(meetingPath(meeting.id)) },
     );
   }
 

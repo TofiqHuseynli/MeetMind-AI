@@ -1,9 +1,9 @@
 # Phase 2: Live mode
 
 A real meeting goes in as an audio or transcript file and comes out as a ready meeting on the
-dashboard. Supabase holds the data and the files, Deepgram turns speech into speaker turns,
-Claude writes the analysis. The mock is replaced feature by feature and deleted at the end; its
-fictional content never enters the database.
+dashboard. Supabase holds the data and the files, Deepgram turns speech into speaker turns, a
+language model writes the analysis (Gemini first, Claude later). The mock is replaced feature by
+feature and deleted at the end; its fictional content never enters the database.
 
 Decisions (chat, 2026-10-13):
 
@@ -12,9 +12,13 @@ Decisions (chat, 2026-10-13):
   on Vercel; the Supabase CLI holds migrations and generates the row types.
 - Backend: Vercel Functions in `api/` (Node). Their helpers live in `api/_lib/`: Vercel makes every
   other file in `api/` a public function. They hold the keys (Supabase service role, Deepgram,
-  Anthropic). The browser never calls Deepgram or Claude. Local dev runs them with `vercel dev`.
-- Claude: `claude-opus-5-5` with structured output. The transcript is sent line by line with its
-  segment ids, so every decision, task, risk and insight points at its sentence.
+  the model). The browser never calls Deepgram or the model. Local dev runs them with `vercel dev`.
+- The model: behind one adapter in `api/_lib/llm/`, picked by `LLM_PROVIDER`. It starts with
+  Google Gemini on its free tier (`GEMINI_API_KEY`, decided in chat on 2026-10-14: no paid key
+  yet); `anthropic` with `claude-opus-5-5` plugs in later without touching the analysis. Each is
+  called with plain `fetch` and structured (JSON) output. The transcript is sent line by line with
+  numbers, so every decision, task, risk and insight points at its sentence. The free tier may
+  use what it is sent to improve Google's products: test and demo meetings only.
 - Deepgram: prerecorded, diarized, with utterances. The file goes from the browser straight to
   Storage; the function hands Deepgram a signed URL and gets the result on a callback.
 - The data flow does not change: component -> query hook -> `api.ts` -> `src/supabase/db/`,
@@ -37,8 +41,8 @@ Decisions (chat, 2026-10-13):
   replaced by Tasks 23 and 24.
 - New routes, `/login` (Task 16) and `/people` (Task 22), join the route list in `CLAUDE.md`
   and `spec.md`.
-- New packages: `@supabase/supabase-js`; `@anthropic-ai/sdk` and `@deepgram/sdk` for `api/`;
-  `supabase` and `vercel` as dev tools. Nothing else without asking.
+- New packages: `@supabase/supabase-js`; `supabase` and `vercel` as dev tools. The model and
+  Deepgram are called with `fetch`, so no SDK. Nothing else without asking.
 
 ## Database
 
@@ -145,20 +149,20 @@ As built: 50 MB is the most a file can be on the Free plan, so the form says so;
 TXT, VTT or SRT file (a DOCX cannot be read as text in a function). Deleting a meeting takes its
 file out of Storage too.
 
-### Task 24: Analysis with Claude
+### Task 24: Analysis with the model
 `api/analyze.ts`: a text transcript is split into segments (`Name: text` lines, or paragraphs
-with one unknown speaker); the segments go to Claude with their ids and the participant list;
+with one unknown speaker); the numbered lines go to the model with the participant list;
 the structured answer (summary, overall and per-segment sentiment, chapters, decisions, action
 items with owner, due date and priority, risks, insights, suggested tasks) is written to the
 database with participation computed from the segments, and the meeting becomes `ready`, or
 `failed` with the reason. Retry runs it again.
-Files: `api/analyze.ts`, `api/_lib/` (Supabase admin client, the Claude call and its schema)
+Files: `api/analyze.ts`, `api/_lib/` (Supabase admin client, the model adapter, the answer's schema)
 Done when: an uploaded transcript file becomes a ready meeting with linked items on every tab.
 
 ### Task 25: Speech to text with Deepgram
 `api/transcribe.ts` sends Deepgram a signed URL of the audio with diarization and utterances
 and a callback URL; `api/deepgram-callback.ts` writes the segments with their speaker labels and
-starts the analysis. Claude matches the labels to the participants; a label it cannot place stays
+starts the analysis. The model matches the labels to the participants; a label it cannot place stays
 "Speaker A" until the user names it on the meeting page ("Who is Speaker A?"), which writes
 `meeting_speakers`.
 Files: `api/transcribe.ts`, `api/deepgram-callback.ts`, `src/features/meetings/` (the speaker
@@ -166,10 +170,10 @@ naming), `src/features/transcript/`
 Done when: an uploaded audio file becomes a ready meeting with named speakers.
 
 ### Task 26: Write with AI
-`api/draft-task.ts` sends the sentence, the lines around it and the participants to Claude and
+`api/draft-task.ts` sends the sentence, the lines around it and the participants to the model and
 returns the task fields; replaces the mock's heuristic behind the same `draftTask` signature.
 Files: `api/draft-task.ts`, `src/supabase/db/suggestions.ts`
-Done when: "Write with AI" in the task dialog fills the fields from Claude.
+Done when: "Write with AI" in the task dialog fills the fields from the model.
 
 ## Close
 

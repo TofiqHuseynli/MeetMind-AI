@@ -67,6 +67,8 @@ export type Meeting = {
   /** Null until the meeting is ready. */
   sentiment: MeetingSentiment | null;
   participation: Participation[];
+  /** Why the analysis failed, said for the failed state; absent otherwise. */
+  failureReason?: string | null;
 };
 
 /** A meeting as the list returns it, with what the service counts for it. */

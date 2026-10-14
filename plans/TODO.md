@@ -32,7 +32,7 @@
 - [x] Task 21: Action item writes
 - [x] Task 22: People
 - [x] Task 23: Real upload
-- [ ] Task 24: Analysis with Claude
+- [ ] Task 24: Analysis with the model (Gemini first)
 - [ ] Task 25: Speech to text with Deepgram
 - [ ] Task 26: Write with AI
 - [ ] Task 27: Mock removed
@@ -48,8 +48,9 @@
 
 ## Open questions
 
-- Phase 2 model: `claude-opus-5-5` is the plan; `claude-sonnet-5-5` cuts the cost of an analysis
-  by about half if quality holds. Decide in Task 24 after the first real meetings.
+- Phase 2 model: Gemini on its free tier for now (no paid key yet). For real meetings switch
+  `LLM_PROVIDER` to `anthropic` (`claude-opus-5-5`, or `claude-sonnet-5-5` at about half the
+  cost) once a key is there: the free tier may use what it is sent.
 - Teams and projects have no page of their own yet: they are edited in `supabase/seed.sql` or
   the Supabase dashboard. A small settings page can follow Task 22 if the team needs it.
 

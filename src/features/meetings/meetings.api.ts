@@ -1,3 +1,4 @@
+import { startProcessing } from "@/lib/api";
 import * as insightsDb from "@/supabase/db/insights";
 import * as meetingsDb from "@/supabase/db/meetings";
 import * as exportDb from "@/supabase/db/meetings-export";
@@ -105,7 +106,9 @@ export async function moveMeetings(input: MoveMeetingsInput): Promise<void> {
 
 /** Returns how many of the meetings were failed and started again. */
 export async function retryMeetingProcessing(ids: string[]): Promise<number> {
-  return meetingsDb.retryProcessing(meetingIdsSchema.parse(ids));
+  const restarted = await meetingsDb.retryProcessing(meetingIdsSchema.parse(ids));
+  restarted.forEach(startProcessing);
+  return restarted.length;
 }
 
 /** The selected meetings as a CSV, Excel or PDF file, ready to save. */

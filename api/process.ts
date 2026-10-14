@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { analyzeMeeting } from "./_lib/analyze.js";
 import { requireUser } from "./_lib/auth.js";
 import { errorResponse, HttpError, json } from "./_lib/http.js";
 import { supabaseAdmin } from "./_lib/supabase-admin.js";
@@ -6,9 +7,10 @@ import { supabaseAdmin } from "./_lib/supabase-admin.js";
 const bodySchema = z.object({ meetingId: z.uuid() });
 
 /**
- * Starts the work on an uploaded meeting, which the browser has made as processing with its
- * file in Storage. A transcript goes to the analysis, a recording to speech to text first.
- * Answers 202 at once: the meeting page polls until the meeting is ready or failed.
+ * The work on an uploaded or retried meeting, which is processing with its file in Storage. A
+ * transcript is analysed here and now, so the function lives until the meeting is ready or
+ * failed (Vercel would stop work left after the answer); the browser does not wait for it, the
+ * meeting page polls. A recording goes to speech to text first (Task 25).
  */
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -28,9 +30,12 @@ export async function POST(request: Request): Promise<Response> {
     }
     if (!meeting.source_path) throw new HttpError(409, "That meeting has no file to process.");
 
-    // The analysis (Task 24) and speech to text (Task 25) are started from here.
-    const next = meeting.source_kind === "audio" ? "transcription" : "analysis";
-    return json({ meetingId: meeting.id, next }, 202);
+    if (meeting.source_kind === "audio") {
+      // Speech to text (Task 25) starts here and calls the analysis when its lines are in.
+      return json({ meetingId: meeting.id, next: "transcription" }, 202);
+    }
+    const status = await analyzeMeeting(meeting.id);
+    return json({ meetingId: meeting.id, status });
   } catch (error) {
     return errorResponse(error);
   }

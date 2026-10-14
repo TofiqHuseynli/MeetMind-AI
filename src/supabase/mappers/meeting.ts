@@ -59,5 +59,6 @@ export function toMeetingListItem(row: Tables<"meeting_rows">): MeetingListItem 
     participation: toParticipation(row.participation),
     actionCounts: toActionCounts(row),
     hasTranscript: row.has_transcript ?? false,
+    failureReason: row.failure_reason,
   };
 }
