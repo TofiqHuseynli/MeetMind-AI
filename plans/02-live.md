@@ -158,6 +158,11 @@ database with participation computed from the segments, and the meeting becomes 
 `failed` with the reason. Retry runs it again.
 Files: `api/analyze.ts`, `api/_lib/` (Supabase admin client, the model adapter, the answer's schema)
 Done when: an uploaded transcript file becomes a ready meeting with linked items on every tab.
+As built: Gemini on the free tier, tried in turn while one model stays overloaded
+(`gemini-3.5-flash`, `gemini-flash-lite-latest`, `gemini-flash-latest`; `GEMINI_MODEL` overrides);
+2.5 is closed to new users and the "latest" alias queued for minutes. A transcript analyses in
+about half a minute. A failed analysis keeps its reason, which the meeting page shows; Retry
+runs api/process again. finish_analysis writes everything in one transaction.
 
 ### Task 25: Speech to text with Deepgram
 `api/transcribe.ts` sends Deepgram a signed URL of the audio with diarization and utterances

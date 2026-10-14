@@ -4,7 +4,13 @@ import type { JsonRequest, JsonSchema, LanguageModel } from "./types.js";
 // Google Gemini through its REST API: one generateContent call with JSON output. The free tier
 // is enough for demos; it may keep what it is sent to improve Google's products.
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+// The models tried in turn while one stays overloaded on the free tier: a fast Flash first, the
+// light one next, the newest last (the "latest" alias queued for minutes in testing). Older
+// names close to new users (2.5 did). GEMINI_MODEL, a comma list, picks others.
+const DEFAULT_MODELS = ["gemini-3.5-flash", "gemini-flash-lite-latest", "gemini-flash-latest"];
+// The free tier answers 503 "high demand" now and then; a short wait usually clears it.
+const RETRIES = 2;
+const RETRY_WAIT_MS = 4000;
 const BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // The older structured output field takes an OpenAPI subset: upper case types and `nullable`.
@@ -34,12 +40,29 @@ type GeminiAnswer = {
 };
 
 async function call(model: string, key: string, body: object): Promise<GeminiAnswer> {
+  for (let attempt = 0; ; attempt += 1) {
+    const answer = await callOnce(model, key, body);
+    if (answer !== "busy") return answer;
+    if (attempt >= RETRIES) {
+      throw new HttpError(503, "The AI service is overloaded right now. Try again in a minute.");
+    }
+    await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT_MS * (attempt + 1)));
+  }
+}
+
+// One request; "busy" when the service is overloaded and the request can be sent again.
+async function callOnce(
+  model: string,
+  key: string,
+  body: object,
+): Promise<GeminiAnswer | "busy"> {
   const response = await fetch(`${BASE}/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
     body: JSON.stringify(body),
   });
   const answer = (await response.json().catch(() => ({}))) as GeminiAnswer;
+  if (response.status === 503 || response.status === 500) return "busy";
   if (response.status === 429) {
     throw new HttpError(429, "The AI service is busy (free tier limit). Try again in a minute.");
   }
@@ -50,54 +73,65 @@ async function call(model: string, key: string, body: object): Promise<GeminiAns
   return answer;
 }
 
+/** One model's JSON answer; an API version without JSON Schema output takes the older field. */
+async function answerWith(model: string, key: string, request: JsonRequest): Promise<GeminiAnswer> {
+  const base = {
+    systemInstruction: { parts: [{ text: request.system }] },
+    contents: [{ role: "user", parts: [{ text: request.prompt }] }],
+  };
+  const config = { temperature: 0.2, responseMimeType: "application/json" };
+  try {
+    return await call(model, key, {
+      ...base,
+      generationConfig: { ...config, responseJsonSchema: request.schema },
+    });
+  } catch (error) {
+    if (!(error instanceof HttpError) || error.status !== 400) throw error;
+    return call(model, key, {
+      ...base,
+      generationConfig: { ...config, responseSchema: toOpenApi(request.schema) },
+    });
+  }
+}
+
+function textOf(answer: GeminiAnswer): unknown {
+  const blocked = answer.promptFeedback?.blockReason;
+  if (blocked) throw new HttpError(422, `The AI service refused the transcript (${blocked}).`);
+  const candidate = answer.candidates?.[0];
+  const text = candidate?.content?.parts?.map((part) => part.text ?? "").join("") ?? "";
+  if (!text) {
+    const reason = candidate?.finishReason ?? "empty";
+    throw new HttpError(502, `The AI service sent no answer (${reason}).`);
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new HttpError(502, "The AI service sent an answer that is not JSON.");
+  }
+}
+
 export function gemini(): LanguageModel {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new HttpError(500, "Set GEMINI_API_KEY for the analysis.");
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  const models = process.env.GEMINI_MODEL
+    ? process.env.GEMINI_MODEL.split(",").map((m) => m.trim()).filter(Boolean)
+    : DEFAULT_MODELS;
 
   return {
-    name: `gemini/${model}`,
-    async generateJson({ system, prompt, schema }: JsonRequest) {
-      const base = {
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-      };
-      let answer: GeminiAnswer;
-      try {
-        answer = await call(model, key, {
-          ...base,
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            responseJsonSchema: schema,
-          },
-        });
-      } catch (error) {
-        // A model or API version without JSON Schema output takes the older field.
-        if (!(error instanceof HttpError) || error.status !== 400) throw error;
-        answer = await call(model, key, {
-          ...base,
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-            responseSchema: toOpenApi(schema),
-          },
-        });
+    name: `gemini/${models[0]}`,
+    async generateJson(request: JsonRequest) {
+      let busy: unknown;
+      for (const model of models) {
+        try {
+          return textOf(await answerWith(model, key, request));
+        } catch (error) {
+          // Overloaded after its retries: the next model may have room.
+          if (!(error instanceof HttpError) || error.status !== 503) throw error;
+          console.warn(`${model} is overloaded; trying the next model.`);
+          busy = error;
+        }
       }
-
-      const blocked = answer.promptFeedback?.blockReason;
-      if (blocked) throw new HttpError(422, `The AI service refused the transcript (${blocked}).`);
-      const candidate = answer.candidates?.[0];
-      const text = candidate?.content?.parts?.map((part) => part.text ?? "").join("") ?? "";
-      if (!text) {
-        const reason = candidate?.finishReason ?? "empty";
-        throw new HttpError(502, `The AI service sent no answer (${reason}).`);
-      }
-      try {
-        return JSON.parse(text) as unknown;
-      } catch {
-        throw new HttpError(502, "The AI service sent an answer that is not JSON.");
-      }
+      throw busy;
     },
   };
 }

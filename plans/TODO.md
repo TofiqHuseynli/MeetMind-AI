@@ -32,7 +32,7 @@
 - [x] Task 21: Action item writes
 - [x] Task 22: People
 - [x] Task 23: Real upload
-- [ ] Task 24: Analysis with the model (Gemini first)
+- [x] Task 24: Analysis with the model (Gemini first)
 - [ ] Task 25: Speech to text with Deepgram
 - [ ] Task 26: Write with AI
 - [ ] Task 27: Mock removed
@@ -42,9 +42,11 @@
 - Since sign-in, supabase-js shares a chunk with zod (`schemas-*.js`, about 490 kB before gzip)
   that every page loads, and the build warns again about chunks over 500 kB. A separate vendor
   chunk for supabase-js (rolldown `advancedChunks`) would split it.
-- Until Task 24 an uploaded or retried meeting stays processing: api/process takes it, but the
-  analysis is not there yet. Until Task 26 "Write with AI" cannot find a database sentence and
+- Until Task 25 an uploaded recording stays processing: speech to text is not there yet (a
+  transcript file is analysed). Until Task 26 "Write with AI" cannot find a database sentence and
   shows its error.
+- The free tier is slow or overloaded at times; the analysis tries three models in turn. A start
+  that never reaches api/process leaves the meeting processing with no way to retry it.
 
 ## Open questions
 
