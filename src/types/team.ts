@@ -1,4 +1,4 @@
-import type { MinListQuery } from "./list";
+import type { ListQuery, MinListQuery } from "./list";
 
 export type Team = {
   id: string;
@@ -41,3 +41,20 @@ export type Person = {
   role: string;
   avatar: { initials: string; tone: AvatarTone };
 };
+
+/** A person as the people table shows them, with what the service counts for them. */
+export type PersonListItem = Person & {
+  email: string | null;
+  meetingCount: number;
+  openTaskCount: number;
+};
+
+/** What the people table filters by: words in the name, role or email. */
+export type PersonFilter = {
+  q?: string;
+};
+
+export const PERSON_SORT_FIELDS = ["name", "role", "meetings"] as const;
+export type PersonSortField = (typeof PERSON_SORT_FIELDS)[number];
+
+export type PersonListQuery = ListQuery<PersonFilter, PersonSortField>;

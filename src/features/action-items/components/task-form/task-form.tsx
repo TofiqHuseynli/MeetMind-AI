@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, Sparkles } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { DatePicker } from "@/components/common/date-picker";
-import { PersonAvatar } from "@/components/common/person-avatar";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -22,10 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePeople } from "@/features/meetings/meetings.queries";
+import { CreatePersonDialog } from "@/features/people/components/form/create-person-dialog";
 import { cn } from "@/lib/utils";
 import { PRIORITIES, type Person } from "@/types";
 import { taskFieldsSchema, type TaskFields } from "../../action-items.schema";
 import { priorityLabel } from "../../action-items.constants";
+import { ownerGroups } from "../../utils/owners";
+import { OwnerSelect } from "./owner-select";
 
 const priorityDot = {
   low: "bg-priority-low",
@@ -44,6 +47,8 @@ const ids = {
 function errorId(id: string) {
   return `${id}-error`;
 }
+
+const noPeople: Person[] = [];
 
 /**
  * A task's fields inside a dialog: what to do, who owns it, by when and how urgent. The dialog
@@ -83,6 +88,12 @@ export function TaskForm({
   const { errors } = form.formState;
   const [drafting, setDrafting] = useState(false);
   const [drafted, setDrafted] = useState(false);
+  const [addingPerson, setAddingPerson] = useState(false);
+  const everyone = usePeople();
+  const owners = useMemo(
+    () => ownerGroups(people, everyone.data ?? noPeople),
+    [people, everyone.data],
+  );
 
   async function draft() {
     if (!onDraft) return;
@@ -97,9 +108,11 @@ export function TaskForm({
     }
   }
 
-  const isOwner = (id: string) => people.some((person) => person.id === id);
+  const isOwner = (id: string) =>
+    owners.inMeeting.some((person) => person.id === id) ||
+    owners.others.some((person) => person.id === id);
 
-  // The owner must be one of `people`, which change when the dialog's meeting does.
+  // The owner must be on the team; the list changes when the dialog's meeting does.
   function submit(values: TaskFields) {
     if (!isOwner(values.ownerId)) {
       form.setError("ownerId", { message: "Pick who owns the task." });
@@ -109,141 +122,135 @@ export function TaskForm({
     onSubmit(values);
   }
 
+  // The person dialog sits outside the form: React events bubble through portals, and its
+  // submit would otherwise submit the task too.
   return (
-    <form noValidate onSubmit={form.handleSubmit(submit, onInvalid)} className="grid gap-6">
-      <FieldGroup>
-        {before}
-        <Field data-invalid={Boolean(errors.title)}>
-          <div className="flex items-center justify-between gap-2">
-            <FieldLabel htmlFor={ids.title}>Task</FieldLabel>
-            {onDraft && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                disabled={drafting || saving}
-                onClick={draft}
-                className="-my-1 text-primary hover:text-primary-hover"
-              >
-                {drafting ? (
-                  <LoaderCircle aria-hidden className="animate-spin" />
-                ) : (
-                  <Sparkles aria-hidden />
-                )}
-                {drafting ? "Writing…" : "Write with AI"}
-              </Button>
-            )}
-          </div>
-          <Input
-            id={ids.title}
-            aria-invalid={Boolean(errors.title)}
-            aria-describedby={errors.title ? errorId(ids.title) : undefined}
-            {...form.register("title")}
-          />
-          {drafted && (
-            <FieldDescription>
-              Written by AI from the sentence. Check every field before you save.
-            </FieldDescription>
-          )}
-          <FieldError id={errorId(ids.title)} errors={[errors.title]} />
-        </Field>
-
-        <Field data-invalid={Boolean(errors.ownerId)}>
-          <FieldLabel htmlFor={ids.owner}>Owner</FieldLabel>
-          <Controller
-            control={form.control}
-            name="ownerId"
-            render={({ field }) => (
-              <Select
-                value={isOwner(field.value) ? field.value : ""}
-                onValueChange={field.onChange}
-                disabled={people.length === 0}
-              >
-                <SelectTrigger
-                  id={ids.owner}
-                  aria-invalid={Boolean(errors.ownerId)}
-                  aria-describedby={errors.ownerId ? errorId(ids.owner) : undefined}
-                  className="w-full"
+    <>
+      <form noValidate onSubmit={form.handleSubmit(submit, onInvalid)} className="grid gap-6">
+        <FieldGroup>
+          {before}
+          <Field data-invalid={Boolean(errors.title)}>
+            <div className="flex items-center justify-between gap-2">
+              <FieldLabel htmlFor={ids.title}>Task</FieldLabel>
+              {onDraft && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  disabled={drafting || saving}
+                  onClick={draft}
+                  className="-my-1 text-primary hover:text-primary-hover"
                 >
-                  <SelectValue
-                    placeholder={people.length === 0 ? ownerPlaceholder : "Pick who owns it"}
-                  />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    {people.map((person) => (
-                      <SelectItem key={person.id} value={person.id}>
-                        <PersonAvatar person={person} size="sm" tooltip={false} />
-                        {person.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                  {drafting ? (
+                    <LoaderCircle aria-hidden className="animate-spin" />
+                  ) : (
+                    <Sparkles aria-hidden />
+                  )}
+                  {drafting ? "Writing…" : "Write with AI"}
+                </Button>
+              )}
+            </div>
+            <Input
+              id={ids.title}
+              aria-invalid={Boolean(errors.title)}
+              aria-describedby={errors.title ? errorId(ids.title) : undefined}
+              {...form.register("title")}
+            />
+            {drafted && (
+              <FieldDescription>
+                Written by AI from the sentence. Check every field before you save.
+              </FieldDescription>
             )}
-          />
-          <FieldError id={errorId(ids.owner)} errors={[errors.ownerId]} />
-        </Field>
+            <FieldError id={errorId(ids.title)} errors={[errors.title]} />
+          </Field>
 
-        <div className="grid gap-7 sm:grid-cols-2 sm:gap-4">
-          <Field data-invalid={Boolean(errors.dueDate)}>
-            <FieldLabel htmlFor={ids.dueDate}>Deadline</FieldLabel>
+          <Field data-invalid={Boolean(errors.ownerId)}>
+            <FieldLabel htmlFor={ids.owner}>Owner</FieldLabel>
             <Controller
               control={form.control}
-              name="dueDate"
+              name="ownerId"
               render={({ field }) => (
-                <DatePicker
-                  id={ids.dueDate}
-                  value={field.value}
+                <OwnerSelect
+                  id={ids.owner}
+                  value={isOwner(field.value) ? field.value : ""}
                   onChange={field.onChange}
-                  invalid={Boolean(errors.dueDate)}
-                  describedBy={errors.dueDate ? errorId(ids.dueDate) : undefined}
+                  inMeeting={owners.inMeeting}
+                  others={owners.others}
+                  waitingLabel={ownerPlaceholder}
+                  invalid={Boolean(errors.ownerId)}
+                  describedBy={errors.ownerId ? errorId(ids.owner) : undefined}
+                  onNewPerson={() => setAddingPerson(true)}
                 />
               )}
             />
-            <FieldError id={errorId(ids.dueDate)} errors={[errors.dueDate]} />
+            <FieldError id={errorId(ids.owner)} errors={[errors.ownerId]} />
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor={ids.priority}>Priority</FieldLabel>
-            <Controller
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id={ids.priority} className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectGroup>
-                      {PRIORITIES.map((priority) => (
-                        <SelectItem key={priority} value={priority}>
-                          <span
-                            aria-hidden
-                            className={cn("size-2 rounded-full", priorityDot[priority])}
-                          />
-                          {priorityLabel[priority]}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </Field>
-        </div>
-      </FieldGroup>
+          <div className="grid gap-7 sm:grid-cols-2 sm:gap-4">
+            <Field data-invalid={Boolean(errors.dueDate)}>
+              <FieldLabel htmlFor={ids.dueDate}>Deadline</FieldLabel>
+              <Controller
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <DatePicker
+                    id={ids.dueDate}
+                    value={field.value}
+                    onChange={field.onChange}
+                    invalid={Boolean(errors.dueDate)}
+                    describedBy={errors.dueDate ? errorId(ids.dueDate) : undefined}
+                  />
+                )}
+              />
+              <FieldError id={errorId(ids.dueDate)} errors={[errors.dueDate]} />
+            </Field>
 
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="outline">
-            Cancel
+            <Field>
+              <FieldLabel htmlFor={ids.priority}>Priority</FieldLabel>
+              <Controller
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id={ids.priority} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectGroup>
+                        {PRIORITIES.map((priority) => (
+                          <SelectItem key={priority} value={priority}>
+                            <span
+                              aria-hidden
+                              className={cn("size-2 rounded-full", priorityDot[priority])}
+                            />
+                            {priorityLabel[priority]}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </Field>
+          </div>
+        </FieldGroup>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button type="submit" disabled={saving || drafting}>
+            {saving ? "Saving…" : submitLabel}
           </Button>
-        </DialogClose>
-        <Button type="submit" disabled={saving || drafting}>
-          {saving ? "Saving…" : submitLabel}
-        </Button>
-      </DialogFooter>
-    </form>
+        </DialogFooter>
+      </form>
+      <CreatePersonDialog
+        open={addingPerson}
+        onOpenChange={setAddingPerson}
+        onCreated={(person) => form.setValue("ownerId", person.id, { shouldValidate: true })}
+      />
+    </>
   );
 }

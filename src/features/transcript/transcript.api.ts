@@ -1,4 +1,5 @@
-import * as db from "@/mock/db";
+import * as suggestionsDb from "@/supabase/db/suggestions";
+import * as transcriptDb from "@/supabase/db/transcript";
 import type {
   TimeRange,
   TranscriptChapter,
@@ -10,11 +11,13 @@ import type {
 } from "@/types";
 import { suggestionRefSchema, type SuggestionRef } from "./transcript.schema";
 
+// Everything here reads and writes Supabase (src/supabase/db/).
+
 export function fetchTranscriptPage(
   meetingId: string,
   query: TranscriptPageQuery,
 ): Promise<TranscriptPage> {
-  return db.listTranscriptPage(meetingId, query);
+  return transcriptDb.listTranscriptPage(meetingId, query);
 }
 
 export function fetchTranscriptSearch(
@@ -22,23 +25,23 @@ export function fetchTranscriptSearch(
   q: string,
   range?: TimeRange,
 ): Promise<TranscriptSearchResult> {
-  return db.searchTranscript(meetingId, q, range);
+  return transcriptDb.searchTranscript(meetingId, q, range);
 }
 
 export function fetchTimeline(meetingId: string): Promise<TranscriptTimeline> {
-  return db.getTimeline(meetingId);
+  return transcriptDb.getTimeline(meetingId);
 }
 
 export function fetchChapters(meetingId: string): Promise<TranscriptChapter[]> {
-  return db.listChapters(meetingId);
+  return transcriptDb.listChapters(meetingId);
 }
 
 export function fetchTranscriptLinks(meetingId: string): Promise<TranscriptLinks> {
-  return db.listTranscriptLinks(meetingId);
+  return transcriptDb.listTranscriptLinks(meetingId);
 }
 
 /** Takes a suggested task out without making it. */
 export function dismissSuggestion(input: SuggestionRef): Promise<void> {
   const { id } = suggestionRefSchema.parse(input);
-  return db.dismissSuggestedTask(id);
+  return suggestionsDb.dismissSuggestedTask(id);
 }

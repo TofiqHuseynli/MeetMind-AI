@@ -1,4 +1,7 @@
-import * as db from "@/mock/db";
+import * as insightsDb from "@/supabase/db/insights";
+import * as meetingsDb from "@/supabase/db/meetings";
+import * as exportDb from "@/supabase/db/meetings-export";
+import * as teamsDb from "@/supabase/db/teams";
 import type {
   CursorPage,
   Decision,
@@ -31,11 +34,12 @@ import {
   type UpdateDecisionInput,
 } from "./meetings.schema";
 
-// Today these read the mock db. A real service replaces the bodies, nothing else.
+// Everything here reads and writes Supabase (src/supabase/db/). Inputs are parsed with their zod
+// schemas first, whatever the UI sends.
 
 /** One page of meetings, filtered and sorted by the service. */
 export function fetchMeetings(query: MeetingListQuery): Promise<Page<MeetingListItem>> {
-  return db.listMeetings(query);
+  return meetingsDb.listMeetings(query);
 }
 
 /**
@@ -43,25 +47,25 @@ export function fetchMeetings(query: MeetingListQuery): Promise<Page<MeetingList
  * can't be undefined).
  */
 export async function fetchMeeting(id: string): Promise<MeetingListItem | null> {
-  return (await db.getMeeting(id)) ?? null;
+  return (await meetingsDb.getMeeting(id)) ?? null;
 }
 
 /** The meeting's decisions in spoken order, each with who said it and when. */
 export function fetchDecisions(meetingId: string): Promise<DecisionListItem[]> {
-  return db.listDecisions(meetingId);
+  return insightsDb.listDecisions(meetingId);
 }
 
 export function fetchTeams(): Promise<Team[]> {
-  return db.listTeams();
+  return teamsDb.listTeams();
 }
 
 export function fetchProjects(): Promise<Project[]> {
-  return db.listProjects();
+  return teamsDb.listProjects();
 }
 
 /** Projects by name, a batch at a time, for pickers that scroll through many. */
 export function searchProjects(search: ProjectSearch): Promise<CursorPage<Project>> {
-  return db.searchProjects(search);
+  return teamsDb.searchProjects(search);
 }
 
 // The min lists feed the searched selects: id and name only, a batch at a time.
@@ -69,57 +73,57 @@ export function searchProjects(search: ProjectSearch): Promise<CursorPage<Projec
 export function fetchMeetingMinList(
   query: MeetingMinListQuery,
 ): Promise<CursorPage<MinListItem>> {
-  return db.meetingMinList(query);
+  return meetingsDb.meetingMinList(query);
 }
 
 export function fetchTeamMinList(query: MinListQuery): Promise<CursorPage<MinListItem>> {
-  return db.teamMinList(query);
+  return teamsDb.teamMinList(query);
 }
 
 export function fetchProjectMinList(
   query: ProjectMinListQuery,
 ): Promise<CursorPage<MinListItem>> {
-  return db.projectMinList(query);
+  return teamsDb.projectMinList(query);
 }
 
 export function fetchPeopleMinList(query: PeopleMinListQuery): Promise<CursorPage<MinListItem>> {
-  return db.peopleMinList(query);
+  return teamsDb.peopleMinList(query);
 }
 
 export function fetchPeople(): Promise<Person[]> {
-  return db.listPeople();
+  return teamsDb.listPeople();
 }
 
 export async function deleteMeetings(ids: string[]): Promise<void> {
-  return db.deleteMeetings(meetingIdsSchema.parse(ids));
+  return meetingsDb.deleteMeetings(meetingIdsSchema.parse(ids));
 }
 
 export async function moveMeetings(input: MoveMeetingsInput): Promise<void> {
   const { ids, projectId } = moveMeetingsSchema.parse(input);
-  return db.moveMeetings(ids, projectId);
+  return meetingsDb.moveMeetings(ids, projectId);
 }
 
 /** Returns how many of the meetings were failed and started again. */
 export async function retryMeetingProcessing(ids: string[]): Promise<number> {
-  return db.retryProcessing(meetingIdsSchema.parse(ids));
+  return meetingsDb.retryProcessing(meetingIdsSchema.parse(ids));
 }
 
 /** The selected meetings as a CSV, Excel or PDF file, ready to save. */
 export async function exportMeetings(input: ExportMeetingsInput): Promise<ExportFile> {
   const { ids, format } = exportMeetingsSchema.parse(input);
-  return db.exportMeetings(ids, format);
+  return exportDb.exportMeetings(ids, format);
 }
 
 export async function createDecision(input: CreateDecisionInput): Promise<Decision> {
-  return db.createDecision(createDecisionSchema.parse(input));
+  return insightsDb.createDecision(createDecisionSchema.parse(input));
 }
 
 export async function updateDecision(input: UpdateDecisionInput): Promise<Decision> {
   const { id, text } = updateDecisionSchema.parse(input);
-  return db.updateDecision(id, { text });
+  return insightsDb.updateDecision(id, { text });
 }
 
 export function deleteDecision(input: DecisionRef): Promise<void> {
   const { id } = decisionRefSchema.parse(input);
-  return db.deleteDecision(id);
+  return insightsDb.deleteDecision(id);
 }

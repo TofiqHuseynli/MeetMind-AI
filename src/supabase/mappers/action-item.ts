@@ -25,9 +25,9 @@ export function toActionItem(row: Tables<"action_items">): ActionItem {
   return item;
 }
 
-/** A row of the action_item_rows view: the item with its meeting, for the list across meetings. */
-export function toActionItemListItem(row: Tables<"action_item_rows">): ActionItemListItem {
-  const item = toActionItem({
+/** A row of the action_item_rows view as the item alone, for a meeting's own list. */
+export function toActionItemFromRow(row: Tables<"action_item_rows">): ActionItem {
+  return toActionItem({
     id: required(row.id, "action_items.id"),
     meeting_id: required(row.meeting_id, "action_items.meeting_id"),
     segment_id: row.segment_id,
@@ -39,6 +39,11 @@ export function toActionItemListItem(row: Tables<"action_item_rows">): ActionIte
     rank: required(row.rank, "action_items.rank"),
     created_at: required(row.created_at, "action_items.created_at"),
   });
+}
+
+/** A row of the action_item_rows view: the item with its meeting, for the list across meetings. */
+export function toActionItemListItem(row: Tables<"action_item_rows">): ActionItemListItem {
+  const item = toActionItemFromRow(row);
   return {
     ...item,
     meeting: {

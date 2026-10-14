@@ -74,6 +74,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "action_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
+          },
+          {
             foreignKeyName: "action_items_segment_id_meeting_id_fkey"
             columns: ["segment_id", "meeting_id"]
             isOneToOne: false
@@ -115,7 +129,21 @@ export type Database = {
             foreignKeyName: "chapters_first_segment_id_meeting_id_fkey"
             columns: ["first_segment_id", "meeting_id"]
             isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
+          },
+          {
+            foreignKeyName: "chapters_first_segment_id_meeting_id_fkey"
+            columns: ["first_segment_id", "meeting_id"]
+            isOneToOne: false
             referencedRelation: "transcript_segments"
+            referencedColumns: ["id", "meeting_id"]
+          },
+          {
+            foreignKeyName: "chapters_last_segment_id_meeting_id_fkey"
+            columns: ["last_segment_id", "meeting_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_lines"
             referencedColumns: ["id", "meeting_id"]
           },
           {
@@ -182,6 +210,13 @@ export type Database = {
             foreignKeyName: "decisions_segment_id_meeting_id_fkey"
             columns: ["segment_id", "meeting_id"]
             isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
+          },
+          {
+            foreignKeyName: "decisions_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
             referencedRelation: "transcript_segments"
             referencedColumns: ["id", "meeting_id"]
           },
@@ -220,6 +255,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "meetings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insights_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
           },
           {
             foreignKeyName: "insights_segment_id_meeting_id_fkey"
@@ -271,6 +313,13 @@ export type Database = {
             referencedRelation: "people"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "meeting_participants_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
         ]
       }
       meeting_speakers: {
@@ -309,6 +358,13 @@ export type Database = {
             columns: ["person_id"]
             isOneToOne: false
             referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_speakers_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
             referencedColumns: ["id"]
           },
         ]
@@ -475,6 +531,13 @@ export type Database = {
             foreignKeyName: "risks_segment_id_meeting_id_fkey"
             columns: ["segment_id", "meeting_id"]
             isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
+          },
+          {
+            foreignKeyName: "risks_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
             referencedRelation: "transcript_segments"
             referencedColumns: ["id", "meeting_id"]
           },
@@ -529,6 +592,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "people"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggested_tasks_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggested_tasks_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
           },
           {
             foreignKeyName: "suggested_tasks_segment_id_meeting_id_fkey"
@@ -624,10 +701,13 @@ export type Database = {
           meeting_team_id: string | null
           meeting_title: string | null
           owner_id: string | null
+          owner_name: string | null
           priority: string | null
+          priority_rank: number | null
           rank: number | null
           segment_id: string | null
           status: string | null
+          status_rank: number | null
           title: string | null
         }
         Relationships: [
@@ -651,6 +731,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "people"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_items_segment_id_meeting_id_fkey"
+            columns: ["segment_id", "meeting_id"]
+            isOneToOne: false
+            referencedRelation: "transcript_lines"
+            referencedColumns: ["id", "meeting_id"]
           },
           {
             foreignKeyName: "action_items_segment_id_meeting_id_fkey"
@@ -690,6 +784,7 @@ export type Database = {
           participant_ids: string[] | null
           participation: Json | null
           project_id: string | null
+          search_text: string | null
           sentiment_label: string | null
           sentiment_score: number | null
           source_file_name: string | null
@@ -718,9 +813,170 @@ export type Database = {
           },
         ]
       }
+      people_rows: {
+        Row: {
+          avatar_tone: string | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          meeting_count: number | null
+          name: string | null
+          open_task_count: number | null
+          role: string | null
+          search_text: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_tone?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          meeting_count?: never
+          name?: string | null
+          open_task_count?: never
+          role?: string | null
+          search_text?: never
+          user_id?: string | null
+        }
+        Update: {
+          avatar_tone?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          meeting_count?: never
+          name?: string | null
+          open_task_count?: never
+          role?: string | null
+          search_text?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      transcript_lines: {
+        Row: {
+          end_sec: number | null
+          id: string | null
+          meeting_id: string | null
+          position: number | null
+          sentiment: string | null
+          speaker_label: string | null
+          speaker_person_id: string | null
+          start_sec: number | null
+          text: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_speakers_person_id_fkey"
+            columns: ["speaker_person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_speakers_person_id_fkey"
+            columns: ["speaker_person_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcript_segments_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcript_segments_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcript_segments_meeting_id_speaker_label_fkey"
+            columns: ["meeting_id", "speaker_label"]
+            isOneToOne: false
+            referencedRelation: "meeting_speakers"
+            referencedColumns: ["meeting_id", "label"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      create_action_item: {
+        Args: {
+          p_due_date: string
+          p_meeting_id: string
+          p_owner_id: string
+          p_placement?: Json
+          p_priority: string
+          p_segment_id?: string
+          p_status?: string
+          p_suggestion_id?: string
+          p_title: string
+        }
+        Returns: {
+          created_at: string
+          due_date: string
+          id: string
+          meeting_id: string
+          owner_id: string
+          priority: string
+          rank: number
+          segment_id: string | null
+          status: string
+          title: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "action_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      dashboard_statistics: {
+        Args: { p_time_zone: string; p_today: string }
+        Returns: Json
+      }
+      move_action_item: {
+        Args: { p_id: string; p_placement: Json; p_status: string }
+        Returns: {
+          created_at: string
+          due_date: string
+          id: string
+          meeting_id: string
+          owner_id: string
+          priority: string
+          rank: number
+          segment_id: string | null
+          status: string
+          title: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "action_items"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      rank_at: {
+        Args: { p_except: string; p_placement: Json; p_status: string }
+        Returns: number
+      }
+      renumber_action_ranks: { Args: never; Returns: undefined }
+      search_transcript: {
+        Args: {
+          p_from_sec?: number
+          p_meeting_id: string
+          p_q: string
+          p_to_sec?: number
+        }
+        Returns: {
+          hits: number
+          segment_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -126,6 +126,9 @@ by the service from the speaker hues.
 Files: `src/features/people/`, `src/routes/people.tsx`, `src/router.tsx`,
 `src/components/layout/`, `src/supabase/db/people.ts`
 Done when: a person added on `/people` can be picked as a participant and as a task owner.
+As built: the owner picker lists the meeting's people first, then the rest of the team, so a
+task can go to someone who was not in the meeting; "New person…" at its end adds and picks
+someone. The participant picker and its "New person" come with the upload form in Task 23.
 
 ## Pipeline
 

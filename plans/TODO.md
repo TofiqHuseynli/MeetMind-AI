@@ -25,12 +25,12 @@
 - [x] Task 14: Supabase project and client (the env vars on Vercel wait for the Vercel project)
 - [x] Task 15: Schema, policies and seed
 - [x] Task 16: Sign-in
-- [ ] Task 17: Meeting reads
-- [ ] Task 18: Transcript and insight reads
-- [ ] Task 19: Action item reads
-- [ ] Task 20: Meeting and decision writes
-- [ ] Task 21: Action item writes
-- [ ] Task 22: People
+- [x] Task 17: Meeting reads
+- [x] Task 18: Transcript and insight reads
+- [x] Task 19: Action item reads
+- [x] Task 20: Meeting and decision writes
+- [x] Task 21: Action item writes
+- [x] Task 22: People
 - [ ] Task 23: Real upload
 - [ ] Task 24: Analysis with Claude
 - [ ] Task 25: Speech to text with Deepgram
@@ -39,7 +39,12 @@
 
 ## Known problems
 
-- None open.
+- Since sign-in, supabase-js shares a chunk with zod (`schemas-*.js`, about 490 kB before gzip)
+  that every page loads, and the build warns again about chunks over 500 kB. A separate vendor
+  chunk for supabase-js (rolldown `advancedChunks`) would split it.
+- Until Task 23 the upload still goes to the mock db, so its new meeting is not in the database
+  and its page says the upload is gone. Until Task 24 a retried meeting stays processing. Until
+  Task 26 "Write with AI" cannot find a database sentence and shows its error.
 
 ## Open questions
 

@@ -1,4 +1,5 @@
 import * as db from "@/mock/db";
+import * as itemsDb from "@/supabase/db/action-items";
 import type {
   ActionBoardColumnPage,
   ActionBoardColumnQuery,
@@ -23,54 +24,40 @@ import {
 import { dueDateOf } from "@/utils/date";
 import { dueDay } from "./utils/due-date";
 
-// Today these read the mock db. A real service replaces the bodies, nothing else.
+// Reads and writes go to Supabase (src/supabase/db/). "Write with AI" still uses the mock db
+// until Task 26 moves it. The database checks the owner, the meeting and the sentence itself.
 
 /** One page of a meeting's items, filtered and sorted by the service. */
 export function fetchMeetingActionItems(
   meetingId: string,
   query: ActionItemListQuery,
 ): Promise<Page<ActionItem>> {
-  return db.listMeetingActionItems(meetingId, query);
+  return itemsDb.listMeetingActionItems(meetingId, query);
 }
 
 /** One page of every meeting's items, each with its meeting, filtered and sorted by the service. */
 export function fetchActionItemPage(query: ActionItemListQuery): Promise<Page<ActionItemListItem>> {
-  return db.listActionItemPage(query);
+  return itemsDb.listActionItemPage(query);
 }
 
 /** One column of the board: the items with one status, in the board's order, a batch at a time. */
 export function fetchActionBoardColumn(
   query: ActionBoardColumnQuery,
 ): Promise<ActionBoardColumnPage> {
-  return db.listActionBoardColumn(query);
+  return itemsDb.listActionBoardColumn(query);
 }
 
 /** A new status; with a placement (a drop on the board), a new place in that column too. */
 export async function updateActionStatus(input: UpdateActionStatusInput): Promise<ActionItem> {
   const { id, status, placement } = updateActionStatusSchema.parse(input);
-  if (placement) return db.moveActionItem(id, status, placement);
-  return db.updateActionItem(id, { status });
-}
-
-async function assertKnownOwner(ownerId: string): Promise<void> {
-  const people = await db.listPeople();
-  if (!people.some((person) => person.id === ownerId)) {
-    throw new Error("The owner is not on the team list.");
-  }
-}
-
-// A task joins a meeting that has been analysed; the meeting select offers only those.
-async function assertReadyMeeting(meetingId: string): Promise<void> {
-  const meeting = await db.getMeeting(meetingId);
-  if (!meeting) throw new Error("The meeting no longer exists.");
-  if (meeting.status !== "ready") throw new Error("The meeting is still being analysed.");
+  if (placement) return itemsDb.moveActionItem(id, status, placement);
+  return itemsDb.updateActionItem(id, { status });
 }
 
 export async function createActionItem(input: CreateActionItemInput): Promise<ActionItem> {
   const { dueDate, suggestionId, status, placement, ...item } = createActionItemSchema.parse(input);
-  await assertReadyMeeting(item.meetingId);
-  await assertKnownOwner(item.ownerId);
-  return db.createActionItem(
+  // A task joins a meeting that has been analysed; create_action_item refuses any other.
+  return itemsDb.createActionItem(
     { ...item, dueDate: dueDateOf(dueDate) },
     { status, placement, suggestionId },
   );
@@ -78,13 +65,12 @@ export async function createActionItem(input: CreateActionItemInput): Promise<Ac
 
 export async function updateActionItem(input: UpdateActionItemInput): Promise<ActionItem> {
   const { id, title, ownerId, dueDate, priority } = updateActionItemSchema.parse(input);
-  await assertKnownOwner(ownerId);
-  return db.updateActionItem(id, { title, ownerId, priority, dueDate: dueDateOf(dueDate) });
+  return itemsDb.updateActionItem(id, { title, ownerId, priority, dueDate: dueDateOf(dueDate) });
 }
 
 export function deleteActionItem(input: ActionItemRef): Promise<void> {
   const { id } = actionItemRefSchema.parse(input);
-  return db.deleteActionItem(id);
+  return itemsDb.deleteActionItem(id);
 }
 
 /** The task fields the analysis drafts from a sentence, as the task form takes them. */

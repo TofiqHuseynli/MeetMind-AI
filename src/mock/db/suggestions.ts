@@ -99,11 +99,3 @@ export async function draftTask(segmentId: string): Promise<Omit<SuggestedTask, 
   if (!segment) throw new Error("That sentence is no longer in the transcript.");
   return copy(draft(segment));
 }
-
-/** Takes a suggested task out without making it, when nobody wants it. */
-export async function dismissSuggestedTask(id: string): Promise<void> {
-  await delay();
-  const store = db();
-  if (!store.suggestedTasks.some((s) => s.id === id)) throw new Error(`Unknown suggestion ${id}`);
-  store.suggestedTasks = store.suggestedTasks.filter((s) => s.id !== id);
-}

@@ -38,6 +38,10 @@ export const router = createBrowserRouter([
         },
       },
       {
+        path: "people",
+        lazy: { Component: async () => (await import("./routes/people")).PeopleRoute },
+      },
+      {
         path: "upload",
         lazy: { Component: async () => (await import("./routes/upload")).UploadRoute },
       },

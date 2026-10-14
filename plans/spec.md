@@ -38,6 +38,7 @@ a task from there.
 | `/upload` | the mock upload: dropzone, project and team, then the processing state and a move to the new meeting |
 | `/login` | sign in with email and password (Phase 2); "Forgot password?" sends a reset link. Signed-out visitors land here with `?next=` and go back to that page after |
 | `/set-password` | where an invitation or a reset email opens, signed in by its link: the new password twice (Phase 2) |
+| `/people` | the team as a data table (name with avatar and email, role, meetings, open tasks; search, sort, pages from the service), add, edit and remove in a dialog; someone with meetings or tasks cannot be removed (Phase 2) |
 
 The shell is a sidebar on desktop and a sheet on phones, with a top bar that carries the
 sidebar toggle, search and the upload action.

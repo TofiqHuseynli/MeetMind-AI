@@ -1,7 +1,7 @@
-import * as db from "@/mock/db";
+import * as db from "@/supabase/db/dashboard";
 import type { DashboardStatistics } from "@/types";
 
-// Today these read the mock db. A real service replaces the bodies, nothing else.
+// The dashboard reads Supabase: the database counts everything in one reply.
 
 /** This week against the last, meetings per day, the sentiment trend and the open items. */
 export function fetchDashboardStatistics(): Promise<DashboardStatistics> {
