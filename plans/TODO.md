@@ -13,25 +13,40 @@
 - [x] Task 9: Action items table
 - [x] Task 10: Kanban board
 - [x] Task 11: Dashboard
-- [x] Task 12: Mock upload
+- [x] Task 12: Mock upload (done on the mock; Task 23 replaces it in Phase 2)
 - [x] Task 13: States, responsive and README
+- [x] Task 13.1: Uploads come with a transcript
+- [x] Task 13.2: The way in for a reviewer
+- [x] Task 13.3: Live demo
+- [x] Task 13.4: Final review
 
-## Phase 1.5: Delivery (`02-delivery.md`)
+## Phase 2: Live mode (`02-live.md`)
 
-- [x] Task 14: Uploads come with a transcript
-- [x] Task 15: The way in for a reviewer
-- [x] Task 16: Live demo
-- [x] Task 17: Final review
-
-## Phase 2: Live mode
-
-- [ ] Write the plan, only when the user asks
+- [x] Task 14: Supabase project and client (the env vars on Vercel wait for the Vercel project)
+- [x] Task 15: Schema, policies and seed
+- [x] Task 16: Sign-in
+- [ ] Task 17: Meeting reads
+- [ ] Task 18: Transcript and insight reads
+- [ ] Task 19: Action item reads
+- [ ] Task 20: Meeting and decision writes
+- [ ] Task 21: Action item writes
+- [ ] Task 22: People
+- [ ] Task 23: Real upload
+- [ ] Task 24: Analysis with Claude
+- [ ] Task 25: Speech to text with Deepgram
+- [ ] Task 26: Write with AI
+- [ ] Task 27: Mock removed
 
 ## Known problems
 
 - None open.
 
 ## Open questions
+
+- Phase 2 model: `claude-opus-5-5` is the plan; `claude-sonnet-5-5` cuts the cost of an analysis
+  by about half if quality holds. Decide in Task 24 after the first real meetings.
+- Teams and projects have no page of their own yet: they are edited in `supabase/seed.sql` or
+  the Supabase dashboard. A small settings page can follow Task 22 if the team needs it.
 
 - Long transcripts (1000 lines and more), one step at a time with the user's yes: 1. paging from the
   service with "Show more" (done), 2. search on the service with a list of hits (done), 3. chapters
@@ -44,9 +59,7 @@
   place, such as a row of its own or the Overview tab.
 
 - Sidebar counts (meetings, open action items) and the "Processing 1 meeting" card from the v2
-  boards: a small follow-up after Task 10, when the action item hooks exist.
-
-- Saving the mock db to `localStorage` with a "Reset demo data" action: after Phase 1, if wanted.
+  boards: a small follow-up, now that the action item hooks exist.
 
 - More row actions on the meeting table (rename, "Open transcript", which links to
   `?tab=transcript`): each needs its mutation or route first. Not in

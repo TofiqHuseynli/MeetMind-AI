@@ -3,6 +3,7 @@ import { isNavActive, navItems } from "@/components/layout/nav";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -21,8 +22,11 @@ const itemClass = cn(
   "data-active:hover:bg-primary/10 data-active:hover:text-primary",
 );
 
-/** The main navigation: a sidebar that collapses to an icon rail, a sheet on phones. */
-export function AppSidebar() {
+/**
+ * The main navigation: a sidebar that collapses to an icon rail, a sheet on phones. `footer`
+ * sits at its foot, such as who is signed in.
+ */
+export function AppSidebar({ footer }: { footer?: React.ReactNode }) {
   const { pathname } = useLocation();
   const { state, isMobile, setOpenMobile } = useSidebar();
   const compact = state === "collapsed" && !isMobile;
@@ -56,6 +60,7 @@ export function AppSidebar() {
           </nav>
         </SidebarGroup>
       </SidebarContent>
+      {footer && <SidebarFooter>{footer}</SidebarFooter>}
       <SidebarRail />
     </Sidebar>
   );

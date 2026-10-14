@@ -25,3 +25,9 @@ dist-ssr
 
 # IDE
 .idea/
+
+# Env files with secrets and the Vercel CLI link
+.env
+.env.*
+!.env.example
+.vercel
