@@ -10,4 +10,15 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // supabase-js is on every page; in a chunk of its own it stays cached across deploys
+        // instead of riding along with whichever app module first imported it.
+        codeSplitting: {
+          groups: [{ name: "supabase", test: /node_modules[\\/]@supabase[\\/]/ }],
+        },
+      },
+    },
+  },
 });

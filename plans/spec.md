@@ -121,7 +121,8 @@ Agreed in Task 4 and reworked on 2026-10-07 to the "v2 Light" boards of the desi
 - English only, shadcn/ui primitives on Radix restyled to our tokens. The full list is in the
   project rules under "Decisions already made".
 - Every list and detail has loading, empty and error states with a retry. Processing meetings
-  show the processing state.
+  show the processing state; one still processing 6 minutes after its start (longer than
+  api/process may run) shows as failed, and Retry starts it again.
 - Filters, search, the sort, the page and the selected tab live in the URL.
 - Lists are filtered, counted, sorted and paged by the database, never in the browser; a
   feature reaches it only through its `api.ts` and the data layer in `src/supabase/db/`. Shared pieces (the data table)

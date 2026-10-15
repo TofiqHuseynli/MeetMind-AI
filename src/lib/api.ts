@@ -28,7 +28,7 @@ export async function callApi<T>(path: string, body: unknown): Promise<T> {
 /**
  * Starts the work on a processing meeting without waiting for it: api/process runs until the
  * meeting is ready or failed, and the meeting page polls for that. A start that never reaches
- * the server leaves the meeting processing; that is only logged.
+ * the server is only logged: the meeting shows as failed once its processing has stalled.
  */
 export function startProcessing(meetingId: string): void {
   callApi("process", { meetingId }).catch((error: unknown) => {

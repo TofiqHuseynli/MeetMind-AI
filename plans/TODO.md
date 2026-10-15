@@ -39,12 +39,9 @@
 
 ## Known problems
 
-- Since sign-in, supabase-js shares a chunk with zod (`schemas-*.js`, about 490 kB before gzip)
-  that every page loads, and the build warns again about chunks over 500 kB. A separate vendor
-  chunk for supabase-js (rolldown `advancedChunks`) would split it.
 - The free tier is slow, overloaded or out of quota at times; the analysis tries three models in
-  turn, each with its own quota. A start
-  that never reaches api/process leaves the meeting processing with no way to retry it.
+  turn, each with its own quota. A meeting it could not finish shows as failed, and Retry
+  starts it again.
 
 ## Open questions
 

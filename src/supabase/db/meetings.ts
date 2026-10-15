@@ -125,19 +125,11 @@ export async function moveMeetings(ids: string[], projectId: string): Promise<vo
 }
 
 /**
- * Sets the failed meetings among `ids` processing again; returns their ids, for api/process to
- * start each.
+ * Sets the failed and the stalled meetings among `ids` processing again; returns their ids, for
+ * api/process to start each.
  */
 export async function retryProcessing(ids: string[]): Promise<string[]> {
   const known = ids.filter(isUuid);
   if (known.length === 0) return [];
-  const updated = rows(
-    await supabase()
-      .from("meetings")
-      .update({ status: "processing", failure_reason: null })
-      .in("id", known)
-      .eq("status", "failed")
-      .select("id"),
-  );
-  return updated.map((meeting) => meeting.id);
+  return rows(await supabase().rpc("retry_processing", { p_ids: known }));
 }

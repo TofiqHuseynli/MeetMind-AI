@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       action_items: {
@@ -377,6 +402,7 @@ export type Database = {
           duration_min: number
           failure_reason: string | null
           id: string
+          processing_started_at: string
           project_id: string
           sentiment_label: string | null
           sentiment_score: number | null
@@ -394,6 +420,7 @@ export type Database = {
           duration_min?: number
           failure_reason?: string | null
           id?: string
+          processing_started_at?: string
           project_id: string
           sentiment_label?: string | null
           sentiment_score?: number | null
@@ -411,6 +438,7 @@ export type Database = {
           duration_min?: number
           failure_reason?: string | null
           id?: string
+          processing_started_at?: string
           project_id?: string
           sentiment_label?: string | null
           sentiment_score?: number | null
@@ -951,6 +979,7 @@ export type Database = {
           duration_min: number
           failure_reason: string | null
           id: string
+          processing_started_at: string
           project_id: string
           sentiment_label: string | null
           sentiment_score: number | null
@@ -1001,6 +1030,10 @@ export type Database = {
         Args: { p_label: string; p_meeting_id: string; p_person_id: string }
         Returns: undefined
       }
+      processing_stalled: {
+        Args: { p_started_at: string; p_status: string }
+        Returns: boolean
+      }
       rank_at: {
         Args: { p_except: string; p_placement: Json; p_status: string }
         Returns: number
@@ -1010,6 +1043,7 @@ export type Database = {
         Returns: undefined
       }
       renumber_action_ranks: { Args: never; Returns: undefined }
+      retry_processing: { Args: { p_ids: string[] }; Returns: string[] }
       search_transcript: {
         Args: {
           p_from_sec?: number
@@ -1150,6 +1184,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
