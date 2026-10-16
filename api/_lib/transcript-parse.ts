@@ -2,7 +2,7 @@
 // plain text file brings none, so its times are estimated from how long the words take to say.
 
 export type ParsedLine = {
-  /** Who spoke as the file names them ("Amira", "Speaker 1"); matched to people later. */
+  /** Who spoke as the file names them ("Amira", "Person 1"); matched to people later. */
   speaker: string;
   startSec: number;
   endSec: number;
@@ -10,7 +10,7 @@ export type ParsedLine = {
 };
 
 /** The label of a line nobody in the file is named for. */
-export const UNNAMED_SPEAKER = "Speaker";
+export const UNNAMED_SPEAKER = "Person";
 
 // Spoken English runs at about 150 words a minute.
 const WORDS_PER_SECOND = 2.5;
@@ -22,7 +22,7 @@ const MERGE_MAX_CHARS = 320;
 // Enough for a long meeting while the whole transcript still fits in one model call.
 export const MAX_LINES = 1500;
 
-// "Amira:", "Jonas Weber:", "Speaker 2:" at the start of a line. A name is up to four words of
+// "Amira:", "Jonas Weber:", "Person 2:" at the start of a line. A name is up to four words of
 // letters, so "Note: the deadline" or a time like "10:30" is not taken for a speaker.
 const SPEAKER_PREFIX = /^\s*([\p{L}][\p{L}'.-]*(?:\s+[\p{L}0-9][\p{L}0-9'.-]*){0,3})\s*:\s+(.+)$/u;
 const NOT_NAMES = new Set(["note", "notes", "action", "decision", "todo", "agenda", "summary"]);

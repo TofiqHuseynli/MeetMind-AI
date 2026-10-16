@@ -3,6 +3,7 @@ import {
   answerSchema,
   buildPrompt,
   checkAnswer,
+  personIdByName,
   SYSTEM_PROMPT,
   type Line,
   type Participant,
@@ -38,8 +39,13 @@ async function readMeeting(meetingId: string) {
   const participants: Participant[] = (rows ?? []).flatMap((row) =>
     row.people ? [{ id: row.people.id, name: row.people.name, role: row.people.role }] : [],
   );
-  if (participants.length === 0) throw new Error("The meeting has nobody who took part.");
-  return { meeting, participants };
+
+  // Everyone on the team: a name said in the meeting may be someone nobody picked.
+  const { data: people, error: directoryError } = await db
+    .from("people")
+    .select("id, name, role");
+  if (directoryError) throw directoryError;
+  return { meeting, participants, directory: people ?? [] };
 }
 
 /** A text transcript's lines, from its file in Storage. */
@@ -49,25 +55,9 @@ async function linesOfFile(path: string, fileName: string): Promise<ParsedLine[]
   return parseTranscript(await data.text(), fileName);
 }
 
-/**
- * The speaker labels that plainly name a participant: the whole name, or a first name only one
- * participant has. The model places the rest.
- */
+/** The speaker labels that plainly name a participant. The model places the rest. */
 function matchByName(labels: string[], participants: Participant[]): Map<string, string | null> {
-  const clean = (value: string) => value.trim().toLowerCase();
-  const byName = new Map(participants.map((p) => [clean(p.name), p.id]));
-  const firstNames = new Map<string, string[]>();
-  for (const p of participants) {
-    const first = clean(p.name).split(/\s+/)[0];
-    firstNames.set(first, [...(firstNames.get(first) ?? []), p.id]);
-  }
-  return new Map(
-    labels.map((label) => {
-      const key = clean(label);
-      const single = firstNames.get(key);
-      return [label, byName.get(key) ?? (single?.length === 1 ? single[0] : null)];
-    }),
-  );
+  return new Map(labels.map((label) => [label, personIdByName(label, participants)]));
 }
 
 async function markFailed(meetingId: string, reason: string): Promise<void> {
@@ -81,7 +71,7 @@ async function markFailed(meetingId: string, reason: string): Promise<void> {
 /** Analyses a processing meeting; the meeting ends ready or failed, never left processing. */
 export async function analyzeMeeting(meetingId: string): Promise<"ready" | "failed"> {
   try {
-    const { meeting, participants } = await readMeeting(meetingId);
+    const { meeting, participants, directory } = await readMeeting(meetingId);
     if (!meeting.source_path) throw new Error("The meeting has no file.");
     const lines =
       meeting.source_kind === "audio"
@@ -102,7 +92,7 @@ export async function analyzeMeeting(meetingId: string): Promise<"ready" | "fail
     if (!parsed.success) throw new Error("The AI answer did not have the expected shape.");
     const checked = checkAnswer(
       parsed.data,
-      { participants, lines: prompted, meetingDay, labels },
+      { participants, directory, lines: prompted, meetingDay, labels },
       known,
     );
 

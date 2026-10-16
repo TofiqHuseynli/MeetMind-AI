@@ -412,6 +412,7 @@ export type Database = {
           status: string
           summary: string[]
           title: string
+          title_auto: boolean
         }
         Insert: {
           created_at?: string
@@ -430,6 +431,7 @@ export type Database = {
           status?: string
           summary?: string[]
           title: string
+          title_auto?: boolean
         }
         Update: {
           created_at?: string
@@ -448,6 +450,7 @@ export type Database = {
           status?: string
           summary?: string[]
           title?: string
+          title_auto?: boolean
         }
         Relationships: [
           {
@@ -965,12 +968,12 @@ export type Database = {
       }
       create_upload: {
         Args: {
-          p_participant_ids: string[]
-          p_project_id: string
+          p_participant_ids?: string[]
+          p_project_id?: string
           p_source_file_name: string
           p_source_kind: string
           p_source_path: string
-          p_title: string
+          p_title?: string
         }
         Returns: {
           created_at: string
@@ -989,6 +992,7 @@ export type Database = {
           status: string
           summary: string[]
           title: string
+          title_auto: boolean
         }
         SetofOptions: {
           from: "*"

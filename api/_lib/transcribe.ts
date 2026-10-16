@@ -22,9 +22,9 @@ type DeepgramAnswer = {
   };
 };
 
-/** "Speaker 1", "Speaker 2": the labels people are matched to, by the model or by hand. */
+/** "Person 1", "Person 2": the labels people are matched to, by the model or by hand. */
 export function speakerLabel(speaker: number | undefined): string {
-  return `Speaker ${(speaker ?? 0) + 1}`;
+  return `Person ${(speaker ?? 0) + 1}`;
 }
 
 /** The speaker turns of a recording in Storage. Throws when nothing in it is speech. */

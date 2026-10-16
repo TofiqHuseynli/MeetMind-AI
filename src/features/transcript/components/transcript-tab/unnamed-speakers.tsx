@@ -13,7 +13,7 @@ import type { Meeting, Person } from "@/types";
 import { useNameSpeaker, useSpeakers } from "../../transcript.queries";
 
 /**
- * The voices the analysis could not place ("Speaker 1"), each with a pick of who took part.
+ * The voices the analysis could not place ("Person 1"), each with a pick of anyone on the team.
  * Choosing someone names every line of that voice. Nothing shows while all are named.
  */
 export function UnnamedSpeakers({
@@ -28,7 +28,11 @@ export function UnnamedSpeakers({
   const unnamed = (speakers.data ?? []).filter((speaker) => speaker.personId === null);
   if (unnamed.length === 0) return null;
 
-  const participants = meeting.participantIds.flatMap((id) => personById.get(id) ?? []);
+  // Anyone on the team may be the voice, those who took part first; the pick adds them.
+  const took = new Set(meeting.participantIds);
+  const people = [...personById.values()].sort(
+    (a, b) => Number(took.has(b.id)) - Number(took.has(a.id)),
+  );
 
   return (
     <Card className="gap-3 rounded-2xl border-primary/30 bg-primary/5 px-4 py-3">
@@ -55,7 +59,7 @@ export function UnnamedSpeakers({
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectGroup>
-                    {participants.map((person) => (
+                    {people.map((person) => (
                       <SelectItem key={person.id} value={person.id}>
                         <PersonAvatar person={person} size="sm" tooltip={false} />
                         {person.name}

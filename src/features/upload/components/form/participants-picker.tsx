@@ -56,7 +56,7 @@ export function ParticipantsPicker({
             className={cn("w-full justify-between font-normal", invalid && "border-destructive")}
           >
             <span className={cn(picked.length === 0 && "text-muted-foreground")}>
-              {picked.length === 0 ? "Pick who took part" : `${picked.length} chosen`}
+              {picked.length === 0 ? "The AI finds them by name" : `${picked.length} chosen`}
             </span>
             <ChevronsUpDown aria-hidden className="text-subtle-foreground" />
           </Button>

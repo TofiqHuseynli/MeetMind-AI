@@ -29,10 +29,13 @@ export async function removeMeetingFile(path: string): Promise<void> {
   await supabase().storage.from(BUCKET).remove([path]);
 }
 
-/** The processing meeting of an uploaded file, with the people who took part. */
+/**
+ * The processing meeting of an uploaded file, with the people who took part. Without a title
+ * the file name stands in until the analysis writes one; without a project it goes to the Inbox.
+ */
 export async function createUpload(input: {
-  title: string;
-  projectId: string;
+  title?: string;
+  projectId?: string;
   kind: SourceKind;
   fileName: string;
   path: string;

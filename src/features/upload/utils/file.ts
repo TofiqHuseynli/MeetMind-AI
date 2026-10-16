@@ -17,13 +17,6 @@ export function acceptedExtensions(): string {
   return SOURCE_KINDS.flatMap((kind) => SOURCE_EXTENSIONS[kind].map((e) => `.${e}`)).join(",");
 }
 
-/** "billing-weekly_sync.m4a" becomes "Billing weekly sync". */
-export function titleFromFileName(fileName: string): string {
-  const dot = fileName.lastIndexOf(".");
-  const base = (dot > 0 ? fileName.slice(0, dot) : fileName).replace(/[-_.]+/g, " ").trim();
-  return base.charAt(0).toUpperCase() + base.slice(1);
-}
-
 /** "820 KB", "4.2 MB". */
 export function formatFileSize(bytes: number): string {
   const kb = bytes / 1024;

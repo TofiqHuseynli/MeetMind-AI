@@ -3,7 +3,13 @@ import { Upload } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,8 +22,9 @@ import {
 import { CreatePersonDialog } from "@/features/people/components/form/create-person-dialog";
 import type { Person, Project, Team } from "@/types";
 import { uploadMeetingSchema, type UploadMeetingFields } from "../../upload.schema";
-import { sourceKindOf, titleFromFileName } from "../../utils/file";
+import { sourceKindOf } from "../../utils/file";
 import { FileDropzone } from "./file-dropzone";
+import { Optional } from "./optional-mark";
 import { ParticipantsPicker } from "./participants-picker";
 import { SelectedFile } from "./selected-file";
 
@@ -35,8 +42,9 @@ function errorId(id: string) {
 }
 
 /**
- * The file, then where the meeting belongs: a title (taken from the file name until the user
- * writes one), the team and one of its projects. The view owns the mutation.
+ * The file, then what is known about the meeting: a title, the team and one of its projects,
+ * and who took part. Only the file is required; the analysis fills in the rest. The view owns
+ * the mutation.
  */
 export function UploadForm({
   teams,
@@ -76,9 +84,6 @@ export function UploadForm({
     const value = { name: chosen.name, size: chosen.size, kind };
     setBlob(chosen);
     form.setValue("file", value, { shouldValidate: true });
-    if (!form.getFieldState("title").isDirty) {
-      form.setValue("title", titleFromFileName(chosen.name), { shouldValidate: true });
-    }
   }
 
   function chooseTeam(id: string) {
@@ -133,9 +138,12 @@ export function UploadForm({
           </Field>
 
           <Field data-invalid={Boolean(errors.title)}>
-            <FieldLabel htmlFor={ids.title}>Meeting title</FieldLabel>
+            <FieldLabel htmlFor={ids.title}>
+              Meeting title <Optional />
+            </FieldLabel>
             <Input
               id={ids.title}
+              placeholder="The AI names it from the talk"
               disabled={saving}
               aria-invalid={Boolean(errors.title)}
               aria-describedby={errors.title ? errorId(ids.title) : undefined}
@@ -146,7 +154,9 @@ export function UploadForm({
 
           <div className="grid gap-7 sm:grid-cols-2 sm:gap-4">
             <Field data-invalid={Boolean(errors.teamId)}>
-              <FieldLabel htmlFor={ids.team}>Team</FieldLabel>
+              <FieldLabel htmlFor={ids.team}>
+                Team <Optional />
+              </FieldLabel>
               <Select value={teamId} onValueChange={chooseTeam} disabled={saving}>
                 <SelectTrigger
                   id={ids.team}
@@ -154,7 +164,7 @@ export function UploadForm({
                   aria-describedby={errors.teamId ? errorId(ids.team) : undefined}
                   className="w-full"
                 >
-                  <SelectValue placeholder="Pick the team" />
+                  <SelectValue placeholder="Inbox" />
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectGroup>
@@ -170,7 +180,9 @@ export function UploadForm({
             </Field>
 
             <Field data-invalid={Boolean(errors.projectId)}>
-              <FieldLabel htmlFor={ids.project}>Project</FieldLabel>
+              <FieldLabel htmlFor={ids.project}>
+                Project <Optional />
+              </FieldLabel>
               <Controller
                 control={form.control}
                 name="projectId"
@@ -187,7 +199,7 @@ export function UploadForm({
                       className="w-full"
                     >
                       <SelectValue
-                        placeholder={teamId ? "Pick the project" : "Pick the team first"}
+                        placeholder={teamId ? "Pick the project" : "Inbox"}
                       />
                     </SelectTrigger>
                     <SelectContent position="popper">
@@ -207,7 +219,9 @@ export function UploadForm({
           </div>
 
           <Field data-invalid={Boolean(errors.participantIds)}>
-            <FieldLabel htmlFor={ids.participants}>Who took part</FieldLabel>
+            <FieldLabel htmlFor={ids.participants}>
+              Who took part <Optional />
+            </FieldLabel>
             <Controller
               control={form.control}
               name="participantIds"
@@ -224,6 +238,10 @@ export function UploadForm({
                 />
               )}
             />
+            <FieldDescription>
+              Left empty, the AI finds the speakers by the names said in the meeting and adds new
+              ones to People. A voice with no name stays Person 1, Person 2.
+            </FieldDescription>
             <FieldError id={errorId(ids.participants)} errors={[errors.participantIds]} />
           </Field>
         </FieldGroup>

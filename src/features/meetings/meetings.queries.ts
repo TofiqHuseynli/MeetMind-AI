@@ -13,6 +13,7 @@ import { downloadFile } from "@/lib/download";
 import type {
   CursorPage,
   ExportFormat,
+  MeetingListItem,
   MeetingListQuery,
   MeetingMinListQuery,
   MinListItem,
@@ -57,9 +58,19 @@ export function useMeetings(query: MeetingListQuery) {
 }
 
 export function useMeeting(id: string | undefined) {
+  const queryClient = useQueryClient();
+  const queryKey = meetingKeys.detail(id ?? "");
   return useQuery({
-    queryKey: meetingKeys.detail(id ?? ""),
-    queryFn: () => fetchMeeting(id ?? ""),
+    queryKey,
+    queryFn: async () => {
+      const before = queryClient.getQueryData<MeetingListItem | null>(queryKey)?.status;
+      const meeting = await fetchMeeting(id ?? "");
+      // The analysis may have added people by the names said in the meeting.
+      if (before === "processing" && meeting?.status === "ready") {
+        await queryClient.invalidateQueries({ queryKey: referenceKeys.people });
+      }
+      return meeting;
+    },
     enabled: Boolean(id),
     refetchInterval: (query) =>
       query.state.data?.status === "processing" ? PROCESSING_POLL_MS : false,

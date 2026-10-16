@@ -108,7 +108,7 @@ export function useDismissSuggestion() {
   });
 }
 
-/** The meeting's voices and who each is, for "Who is Speaker 1?". */
+/** The meeting's voices and who each is, for "Who is Person 1?". */
 export function useSpeakers(meetingId: string) {
   return useQuery({
     queryKey: transcriptKeys.speakers(meetingId),

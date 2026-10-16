@@ -20,7 +20,7 @@ export const meetingKeys = {
   decisions: (id: string) => ["meetings", "detail", id, "decisions"] as const,
 };
 
-// Teams, projects and people never change in the demo, so they are fetched once.
+// Teams, projects and people change rarely, so they are fetched once; a change invalidates them.
 export const referenceKeys = {
   teams: ["teams"] as const,
   projects: ["projects"] as const,

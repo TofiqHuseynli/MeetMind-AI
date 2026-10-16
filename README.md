@@ -16,7 +16,9 @@ and people get in by invitation (see [Access](#access)).
 
 1. **Sign in** with the email your invitation came to. The invite link lets you set a password.
 2. **Upload** (`/upload`): drop a recording (MP3, M4A, WAV, OGG, WEBM, MP4) or a transcript
-   (TXT, VTT, SRT), up to 50 MB. Pick the team, the project and who took part. A text
+   (TXT, VTT, SRT), up to 50 MB. Only the file is required: left empty, the AI names the
+   meeting, it goes to the Inbox project, and the speakers are found by the names said in the
+   meeting (a new name is added to People; a voice with no name stays Person 1). A text
    transcript reads best as `Name: what they said` lines.
 3. **The meeting** opens at once in its processing state and updates on its own, in about half
    a minute. The Overview has the AI summary, the key decisions and the open action items, under
@@ -24,7 +26,7 @@ and people get in by invitation (see [Access](#access)).
 4. **Transcript tab**: search for a word to see every hit marked and step through them. **Click
    any sentence**: the right panel shows its AI insight, decision, task and risk. Create a task
    from there, take a suggested one, or let **Write with AI** fill the task from the sentence. A
-   voice the analysis could not place asks **"Who is Speaker 1?"** above the transcript.
+   voice the analysis could not place asks **"Who is Person 1?"** above the transcript.
 5. **Meetings** (`/meetings`): filter by team and project, open the filter panel for status,
    sentiment, a participant or dates, and sort by any column. The URL keeps it all, so a copied
    link opens the same view.
@@ -198,7 +200,7 @@ by step:
 | AI summary, key decisions | The Overview tab, and the Decisions tab (add, edit, delete) |
 | Action items with owner, deadline and priority | The meeting's Action items tab and `/action-items` |
 | Drag and drop between statuses | `/action-items?view=board`, a Kanban board |
-| Speakers in the transcript | The Transcript tab: turns grouped by speaker, each in their own colour; "Who is Speaker 1?" names a voice |
+| Speakers in the transcript | The Transcript tab: turns grouped by speaker, each in their own colour; "Who is Person 1?" names a voice |
 | Search with keyword highlight | The transcript search marks and steps through every hit |
 | Sentiment and participation | The statistics above every meeting tab, the Participants tab and the dashboard |
 | Transcript sentence → right panel | Click a sentence: AI insight, decisions, tasks and risks, "Create task" and "Write with AI" |

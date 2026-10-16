@@ -4,7 +4,7 @@ import type { Meeting } from "@/types";
 import { uploadMeetingInputSchema, type UploadMeetingInput } from "./upload.schema";
 
 // The file goes from the browser straight to Storage; the meeting is made with its people;
-// api/process starts the work on it. The project must be one of the chosen team's.
+// api/process starts the work on it. A project, when picked, must be one of the chosen team's.
 
 export async function uploadMeeting(
   input: UploadMeetingInput,
@@ -12,15 +12,17 @@ export async function uploadMeeting(
 ): Promise<Meeting> {
   const { blob, file, title, teamId, projectId, participantIds } =
     uploadMeetingInputSchema.parse(input);
-  if (projectTeamId(projectId) !== teamId) throw new Error("Pick a project of the chosen team.");
+  if (projectId && projectTeamId(projectId) !== teamId) {
+    throw new Error("Pick a project of the chosen team.");
+  }
 
   const path = db.storagePathFor(file.name);
   await db.uploadMeetingFile(path, blob);
   let meeting: Meeting;
   try {
     meeting = await db.createUpload({
-      title,
-      projectId,
+      title: title || undefined,
+      projectId: projectId || undefined,
       kind: file.kind,
       fileName: file.name,
       path,
