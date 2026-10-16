@@ -37,6 +37,10 @@ const ids = {
   participants: "upload-participants",
 };
 
+// Radix Select has no empty value, so "none" stands for no team or project (ids are uuids).
+const NONE = "none";
+const fromSelect = (value: string) => (value === NONE ? "" : value);
+
 function errorId(id: string) {
   return `${id}-error`;
 }
@@ -157,17 +161,22 @@ export function UploadForm({
               <FieldLabel htmlFor={ids.team}>
                 Team <Optional />
               </FieldLabel>
-              <Select value={teamId} onValueChange={chooseTeam} disabled={saving}>
+              <Select
+                value={teamId || NONE}
+                onValueChange={(value) => chooseTeam(fromSelect(value))}
+                disabled={saving}
+              >
                 <SelectTrigger
                   id={ids.team}
                   aria-invalid={Boolean(errors.teamId)}
                   aria-describedby={errors.teamId ? errorId(ids.team) : undefined}
                   className="w-full"
                 >
-                  <SelectValue placeholder="Inbox" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper">
                   <SelectGroup>
+                    <SelectItem value={NONE}>None (Inbox)</SelectItem>
                     {teams.map((team) => (
                       <SelectItem key={team.id} value={team.id}>
                         {team.name}
@@ -188,8 +197,8 @@ export function UploadForm({
                 name="projectId"
                 render={({ field }) => (
                   <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
+                    value={field.value || NONE}
+                    onValueChange={(value) => field.onChange(fromSelect(value))}
                     disabled={saving || !teamId}
                   >
                     <SelectTrigger
@@ -198,12 +207,11 @@ export function UploadForm({
                       aria-describedby={errors.projectId ? errorId(ids.project) : undefined}
                       className="w-full"
                     >
-                      <SelectValue
-                        placeholder={teamId ? "Pick the project" : "Inbox"}
-                      />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       <SelectGroup>
+                        <SelectItem value={NONE}>None (Inbox)</SelectItem>
                         {teamProjects.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
                             {project.name}

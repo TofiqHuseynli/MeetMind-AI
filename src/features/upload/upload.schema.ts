@@ -28,12 +28,9 @@ const uploadFields = z.object({
   participantIds: z.array(z.string().min(1)),
 });
 
-// A team only narrows the projects: once one is picked, so must be a project of it.
-const hasProjectOfTeam = (input: { teamId: string; projectId: string }) =>
-  !input.teamId || Boolean(input.projectId);
-const projectOfTeamError = { path: ["projectId"], message: "Pick one of the team's projects." };
-
-export const uploadMeetingSchema = uploadFields.refine(hasProjectOfTeam, projectOfTeamError);
+// The team only narrows the projects to pick from; without a project the meeting goes to the
+// Inbox whatever the team.
+export const uploadMeetingSchema = uploadFields;
 
 /** What the form fills in: the file described, and where the meeting belongs. */
 export type UploadMeetingFields = z.infer<typeof uploadMeetingSchema>;
@@ -41,7 +38,6 @@ export type UploadMeetingFields = z.infer<typeof uploadMeetingSchema>;
 /** What is sent: the fields and the file itself, which must be the one they describe. */
 export const uploadMeetingInputSchema = uploadFields
   .extend({ blob: z.instanceof(File) })
-  .refine(hasProjectOfTeam, projectOfTeamError)
   .refine(
     (input) => input.blob.size === input.file.size && input.blob.name === input.file.name,
     { path: ["file"], message: "Choose the file again." },
