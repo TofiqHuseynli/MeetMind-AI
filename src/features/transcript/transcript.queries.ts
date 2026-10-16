@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { actionKeys } from "@/features/action-items/action-items.keys";
 import { meetingKeys } from "@/features/meetings/meetings.keys";
 import type { TimeRange, TranscriptPageQuery } from "@/types";
 import {
@@ -108,7 +109,7 @@ export function useDismissSuggestion() {
   });
 }
 
-/** The meeting's voices and who each is, for "Who is Person 1?". */
+/** The meeting's voices, who each is and a couple of their lines, for naming them. */
 export function useSpeakers(meetingId: string) {
   return useQuery({
     queryKey: transcriptKeys.speakers(meetingId),
@@ -117,8 +118,9 @@ export function useSpeakers(meetingId: string) {
 }
 
 /**
- * Says who a voice is. Every line of it changes speaker, so the transcript, its links and
- * timeline, the decisions (who said them) and the meeting's talk shares reload.
+ * Says who a voice is. Every line of it changes speaker and its tasks may change owner, so the
+ * transcript, its links and timeline, the decisions (who said them), the action items and the
+ * meeting's talk shares reload.
  */
 export function useNameSpeaker() {
   const queryClient = useQueryClient();
@@ -129,6 +131,7 @@ export function useNameSpeaker() {
         queryClient.invalidateQueries({ queryKey: transcriptKeys.all }),
         queryClient.invalidateQueries({ queryKey: meetingKeys.detail(meetingId) }),
         queryClient.invalidateQueries({ queryKey: meetingKeys.lists }),
+        queryClient.invalidateQueries({ queryKey: actionKeys.all }),
       ]),
     onError: (error) => toast.error("Couldn't name the speaker", { description: error.message }),
   });

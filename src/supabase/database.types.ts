@@ -718,6 +718,13 @@ export type Database = {
             referencedRelation: "meeting_speakers"
             referencedColumns: ["meeting_id", "label"]
           },
+          {
+            foreignKeyName: "transcript_segments_meeting_id_speaker_label_fkey"
+            columns: ["meeting_id", "speaker_label"]
+            isOneToOne: false
+            referencedRelation: "speaker_rows"
+            referencedColumns: ["meeting_id", "label"]
+          },
         ]
       }
     }
@@ -883,6 +890,59 @@ export type Database = {
         }
         Relationships: []
       }
+      speaker_rows: {
+        Row: {
+          label: string | null
+          line_count: number | null
+          meeting_id: string | null
+          person_id: string | null
+          samples: Json | null
+        }
+        Insert: {
+          label?: string | null
+          line_count?: never
+          meeting_id?: string | null
+          person_id?: string | null
+          samples?: never
+        }
+        Update: {
+          label?: string | null
+          line_count?: never
+          meeting_id?: string | null
+          person_id?: string | null
+          samples?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_speakers_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_rows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_speakers_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_speakers_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_speakers_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people_rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transcript_lines: {
         Row: {
           end_sec: number | null
@@ -929,6 +989,13 @@ export type Database = {
             columns: ["meeting_id", "speaker_label"]
             isOneToOne: false
             referencedRelation: "meeting_speakers"
+            referencedColumns: ["meeting_id", "label"]
+          },
+          {
+            foreignKeyName: "transcript_segments_meeting_id_speaker_label_fkey"
+            columns: ["meeting_id", "speaker_label"]
+            isOneToOne: false
+            referencedRelation: "speaker_rows"
             referencedColumns: ["meeting_id", "label"]
           },
         ]

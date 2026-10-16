@@ -14,6 +14,7 @@ import { MeetingTabList } from "./header/meeting-tab-list";
 import { MeetingStatistics } from "./statistics/meeting-statistics";
 import { OverviewTab } from "./overview-tab/overview-tab";
 import { ParticipationSection } from "./participants-tab/participation-section";
+import { VoicesSection } from "./participants-tab/voices-section";
 
 /** A ready meeting: the header with its tabs, the meeting statistics, then the chosen tab. */
 export function MeetingDetail({
@@ -65,7 +66,10 @@ export function MeetingDetail({
         <DecisionsTab meeting={meeting} personById={personById} />
       </TabsContent>
       <TabsContent value="participants">
-        <ParticipationSection meeting={meeting} personById={personById} />
+        <div className="grid gap-4">
+          <VoicesSection meeting={meeting} personById={personById} />
+          <ParticipationSection meeting={meeting} personById={personById} />
+        </div>
       </TabsContent>
     </Tabs>
   );

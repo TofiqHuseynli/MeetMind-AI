@@ -1,6 +1,31 @@
-import { SENTIMENT_LABELS, type TranscriptChapter, type TranscriptSegment } from "@/types";
-import type { Tables } from "../database.types";
+import {
+  SENTIMENT_LABELS,
+  type SpeakerLabel,
+  type SpeakerSample,
+  type TranscriptChapter,
+  type TranscriptSegment,
+} from "@/types";
+import type { Json, Tables } from "../database.types";
 import { oneOf, required } from "./rows";
+
+function toSamples(value: Json | null): SpeakerSample[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+    const { segmentId, startSec, text } = entry;
+    if (typeof segmentId !== "string" || typeof text !== "string") return [];
+    return [{ segmentId, startSec: Number(startSec), text }];
+  });
+}
+
+export function toSpeaker(row: Tables<"speaker_rows">): SpeakerLabel {
+  return {
+    label: required(row.label, "speaker label"),
+    personId: row.person_id,
+    lineCount: row.line_count ?? 0,
+    samples: toSamples(row.samples),
+  };
+}
 
 export function toChapter(row: Tables<"chapters">): TranscriptChapter {
   return {

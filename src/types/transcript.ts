@@ -98,4 +98,9 @@ export type TranscriptLinks = {
 export type SpeakerLabel = {
   label: string;
   personId: string | null;
+  lineCount: number;
+  /** Up to two of its lines, in spoken order, to tell who it is. */
+  samples: SpeakerSample[];
 };
+
+export type SpeakerSample = { segmentId: string; startSec: number; text: string };

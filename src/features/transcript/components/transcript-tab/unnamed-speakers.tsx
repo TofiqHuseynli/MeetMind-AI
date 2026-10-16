@@ -1,16 +1,9 @@
 import { UserRoundSearch } from "lucide-react";
-import { PersonAvatar } from "@/components/common/person-avatar";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Meeting, Person } from "@/types";
-import { useNameSpeaker, useSpeakers } from "../../transcript.queries";
+import { useSpeakers } from "../../transcript.queries";
+import { voiceCandidates, voiceIdOf } from "../../utils/voices";
+import { VoicePersonSelect } from "../voices/voice-person-select";
 
 /**
  * The voices the analysis could not place ("Person 1"), each with a pick of anyone on the team.
@@ -24,15 +17,10 @@ export function UnnamedSpeakers({
   personById: Map<string, Person>;
 }) {
   const speakers = useSpeakers(meeting.id);
-  const name = useNameSpeaker();
   const unnamed = (speakers.data ?? []).filter((speaker) => speaker.personId === null);
   if (unnamed.length === 0) return null;
 
-  // Anyone on the team may be the voice, those who took part first; the pick adds them.
-  const took = new Set(meeting.participantIds);
-  const people = [...personById.values()].sort(
-    (a, b) => Number(took.has(b.id)) - Number(took.has(a.id)),
-  );
+  const people = voiceCandidates(personById, meeting.participantIds);
 
   return (
     <Card className="gap-3 rounded-2xl border-primary/30 bg-primary/5 px-4 py-3">
@@ -42,32 +30,19 @@ export function UnnamedSpeakers({
       </p>
       <ul className="grid gap-2 sm:grid-cols-2">
         {unnamed.map((speaker) => {
-          const id = `speaker-${speaker.label.replace(/\W+/g, "-")}`;
+          const id = `speaker-${voiceIdOf(speaker.label)}`;
           return (
             <li key={speaker.label} className="flex items-center gap-3">
               <label htmlFor={id} className="w-24 shrink-0 text-[13px] text-muted-foreground">
                 {speaker.label}
               </label>
-              <Select
-                disabled={name.isPending}
-                onValueChange={(personId) =>
-                  name.mutate({ meetingId: meeting.id, label: speaker.label, personId })
-                }
-              >
-                <SelectTrigger id={id} className="w-full bg-card">
-                  <SelectValue placeholder={`Who is ${speaker.label}?`} />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    {people.map((person) => (
-                      <SelectItem key={person.id} value={person.id}>
-                        <PersonAvatar person={person} size="sm" tooltip={false} />
-                        {person.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <VoicePersonSelect
+                id={id}
+                meetingId={meeting.id}
+                speaker={speaker}
+                people={people}
+                personById={personById}
+              />
             </li>
           );
         })}

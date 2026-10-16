@@ -11,7 +11,7 @@ import type {
 import { supabase } from "../client";
 import { toActionItem } from "../mappers/action-item";
 import { toDecision, toInsight, toRisk, toSuggestedTask } from "../mappers/insight";
-import { speakerIdOf, toChapter, toLine } from "../mappers/transcript";
+import { speakerIdOf, toChapter, toLine, toSpeaker } from "../mappers/transcript";
 import { check, isUuid, rows } from "./query";
 
 // PostgREST sends at most this many rows per request; whole-meeting reads go in batches of it.
@@ -163,16 +163,15 @@ export async function getTimeline(meetingId: string): Promise<TranscriptTimeline
 export async function listSpeakers(meetingId: string): Promise<SpeakerLabel[]> {
   if (!isUuid(meetingId)) return [];
   const found = rows(
-    await supabase()
-      .from("meeting_speakers")
-      .select("label, person_id")
-      .eq("meeting_id", meetingId)
-      .order("label"),
+    await supabase().from("speaker_rows").select("*").eq("meeting_id", meetingId).order("label"),
   );
-  return found.map((row) => ({ label: row.label, personId: row.person_id }));
+  return found.map(toSpeaker);
 }
 
-/** Says who a voice is; the talk shares are counted again with it. */
+/**
+ * Says who a voice is. Its tasks move from whom it was, who leaves the meeting once nothing is
+ * theirs, and the talk shares are counted again.
+ */
 export async function nameSpeaker(
   meetingId: string,
   label: string,
