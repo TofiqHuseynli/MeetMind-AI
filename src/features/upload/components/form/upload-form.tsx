@@ -20,12 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreatePersonDialog } from "@/features/people/components/form/create-person-dialog";
+import { cn } from "@/lib/utils";
 import type { Person, Project, Team } from "@/types";
 import { uploadMeetingSchema, type UploadMeetingFields } from "../../upload.schema";
 import { sourceKindOf } from "../../utils/file";
 import { FileDropzone } from "./file-dropzone";
 import { Optional } from "./optional-mark";
 import { ParticipantsPicker } from "./participants-picker";
+import { SelectClearButton } from "./select-clear-button";
 import { SelectedFile } from "./selected-file";
 
 // Ids follow <feature>-<field>; each error is tied to its control through aria-describedby.
@@ -36,10 +38,6 @@ const ids = {
   project: "upload-project",
   participants: "upload-participants",
 };
-
-// Radix Select has no empty value, so "none" stands for no team or project (ids are uuids).
-const NONE = "none";
-const fromSelect = (value: string) => (value === NONE ? "" : value);
 
 function errorId(id: string) {
   return `${id}-error`;
@@ -161,30 +159,34 @@ export function UploadForm({
               <FieldLabel htmlFor={ids.team}>
                 Team <Optional />
               </FieldLabel>
-              <Select
-                value={teamId || NONE}
-                onValueChange={(value) => chooseTeam(fromSelect(value))}
-                disabled={saving}
-              >
-                <SelectTrigger
-                  id={ids.team}
-                  aria-invalid={Boolean(errors.teamId)}
-                  aria-describedby={errors.teamId ? errorId(ids.team) : undefined}
-                  className="w-full"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    <SelectItem value={NONE}>None (Inbox)</SelectItem>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Select value={teamId} onValueChange={chooseTeam} disabled={saving}>
+                  <SelectTrigger
+                    id={ids.team}
+                    aria-invalid={Boolean(errors.teamId)}
+                    aria-describedby={errors.teamId ? errorId(ids.team) : undefined}
+                    className={cn("w-full", teamId && "pr-14")}
+                  >
+                    <SelectValue placeholder="Pick the team" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      {teams.map((team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {teamId && (
+                  <SelectClearButton
+                    label="Clear the team"
+                    disabled={saving}
+                    onClear={() => chooseTeam("")}
+                  />
+                )}
+              </div>
               <FieldError id={errorId(ids.team)} errors={[errors.teamId]} />
             </Field>
 
@@ -196,30 +198,40 @@ export function UploadForm({
                 control={form.control}
                 name="projectId"
                 render={({ field }) => (
-                  <Select
-                    value={field.value || NONE}
-                    onValueChange={(value) => field.onChange(fromSelect(value))}
-                    disabled={saving || !teamId}
-                  >
-                    <SelectTrigger
-                      id={ids.project}
-                      aria-invalid={Boolean(errors.projectId)}
-                      aria-describedby={errors.projectId ? errorId(ids.project) : undefined}
-                      className="w-full"
+                  <div className="relative">
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={saving || !teamId}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectGroup>
-                        <SelectItem value={NONE}>None (Inbox)</SelectItem>
-                        {teamProjects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        id={ids.project}
+                        aria-invalid={Boolean(errors.projectId)}
+                        aria-describedby={errors.projectId ? errorId(ids.project) : undefined}
+                        className={cn("w-full", field.value && "pr-14")}
+                      >
+                        <SelectValue
+                          placeholder={teamId ? "Pick the project" : "Pick the team first"}
+                        />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectGroup>
+                          {teamProjects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              {project.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {field.value && (
+                      <SelectClearButton
+                        label="Clear the project"
+                        disabled={saving}
+                        onClear={() => field.onChange("")}
+                      />
+                    )}
+                  </div>
                 )}
               />
               <FieldError id={errorId(ids.project)} errors={[errors.projectId]} />
