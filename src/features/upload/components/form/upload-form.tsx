@@ -165,7 +165,7 @@ export function UploadForm({
                     id={ids.team}
                     aria-invalid={Boolean(errors.teamId)}
                     aria-describedby={errors.teamId ? errorId(ids.team) : undefined}
-                    className={cn("w-full", teamId && "pr-14")}
+                    className={cn("w-full", teamId && "*:data-[slot=select-value]:pr-7")}
                   >
                     <SelectValue placeholder="Pick the team" />
                   </SelectTrigger>
@@ -208,7 +208,7 @@ export function UploadForm({
                         id={ids.project}
                         aria-invalid={Boolean(errors.projectId)}
                         aria-describedby={errors.projectId ? errorId(ids.project) : undefined}
-                        className={cn("w-full", field.value && "pr-14")}
+                        className={cn("w-full", field.value && "*:data-[slot=select-value]:pr-7")}
                       >
                         <SelectValue
                           placeholder={teamId ? "Pick the project" : "Pick the team first"}

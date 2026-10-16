@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Empties a Select. It sits over the trigger, left of its chevron, as a sibling: a button inside
- * the trigger would be a button in a button. The trigger needs room for it (`pr-14`).
+ * the trigger would be a button in a button. The value needs room for it (`pr-7`).
  */
 export function SelectClearButton({
   label,
@@ -22,7 +22,7 @@ export function SelectClearButton({
       disabled={disabled}
       aria-label={label}
       className={cn(
-        "absolute top-1/2 right-8 grid size-6 -translate-y-1/2 place-items-center rounded-full",
+        "absolute top-1/2 right-7.5 grid size-6 -translate-y-1/2 place-items-center rounded-full",
         "text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50",
       )}
     >
