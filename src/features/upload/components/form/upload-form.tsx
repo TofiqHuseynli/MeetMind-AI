@@ -109,7 +109,7 @@ export function UploadForm({
         <FieldGroup>
           <Field data-invalid={Boolean(fileError)}>
             <FieldLabel htmlFor={file ? undefined : ids.file}>Recording or transcript</FieldLabel>
-            {/* A Controller registers the field: resetField leaves an unregistered one as it is. */}
+            {/* A Controller registers the field, or resetField would leave it as it is. */}
             <Controller
               control={form.control}
               name="file"
